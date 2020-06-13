@@ -30,5 +30,5 @@ void function_addition(int int_a, int int_b) //function definition
 	//code
 	int_sum = int_a + int_b;
 	printf("\n\n");
-	printf("Sum Of %d And %d = %d\n\n", int_a, int_b, int_sum);
+	printf("Sum Of %d And %d = %d\n\n", int_a, int_b, 	int_sum);
 }
