@@ -2,10 +2,18 @@
 #include <windows.h>
 
 // global function declarations
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK WndProc( HWND,
+						  UINT, 
+						  WPARAM,
+						  LPARAM
+						);
 
 // WinMain()
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstace, LPSTR lpszCmdLine, int iCmdShow)
+int WINAPI WinMain( HINSTANCE hInstance, 
+					HINSTANCE hPrevInstace,
+					LPSTR lpszCmdLine, 
+					int iCmdShow
+				   )
 {
 	//variable declarations
 	WNDCLASSEX wndclass;
@@ -23,7 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstace, LPSTR lpszCmdLin
 	wndclass.hInstance = hInstance;
 	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wndclass.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
 	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
