@@ -18,7 +18,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
 	//variable declarations
 	WNDCLASSEX wndclass;
 	HWND hwnd;
-	MSG msg;
+	MSG 7;
 	TCHAR szAppName[] = TEXT("MyApp");
 
 	// code
@@ -69,9 +69,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	// code
 	switch (iMsg)
 	{
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
 	}
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
 }

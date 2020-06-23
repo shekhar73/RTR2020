@@ -1,0 +1,2 @@
+C:\MyProject\Window\MyWindowApplication\Debug\MyWindowApplication.exe
+C:\MyProject\Window\MyWindowApplication\Debug\MyWindowApplication.pdb
