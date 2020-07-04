@@ -1,2 +1,0 @@
-C:\MyRTRVSProjects\RTR2020\Windows\Windows\WndLogFiles\WindowLogFile\Debug\WindowLogFile.exe
-C:\MyRTRVSProjects\RTR2020\Windows\Windows\WndLogFiles\WindowLogFile\Debug\WindowLogFile.pdb
