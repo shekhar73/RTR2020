@@ -28,6 +28,11 @@ int main(void)
 	ptrFunction = SubtractIntegers;
 	iAnswer = ptrFunction(2, 34);
 	printf("\n\n");
+	printf("\tSubtraction of integers point numbers = %d\n\n", iAnswer);
+
+	ptrAddTwoFloats = AddFloats;
+	fAnswer = ptrAddTwoFloats(45.44f, 34.45f);
+	printf("\n\n");
 	printf("\tSum of floating point numbers = %f\n\n", fAnswer);
 
 	return (0);
