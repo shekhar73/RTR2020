@@ -1,0 +1,2 @@
+C:\MyRTRVSProjects\RTR2020\Windows\Windows\06-FullScreen\Fullscreen\Fullscreen\Debug\Fullscreen.exe
+C:\MyRTRVSProjects\RTR2020\Windows\Windows\06-FullScreen\Fullscreen\Fullscreen\Debug\Fullscreen.pdb

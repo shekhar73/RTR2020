@@ -70,7 +70,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		GetClientRect(hwnd, &rc);
 		hdc = GetDC(hwnd);
 		SetBkColor(hdc, RGB(0, 0, 0));
-		SetTextColor(hdc, RGB(0, 255, 0));
+		SetTextColor(hdc, RGB(0, 255, 0));	
 		DrawText(hdc, str, -1, &rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 		ReleaseDC(hwnd, hdc);
 		break;
