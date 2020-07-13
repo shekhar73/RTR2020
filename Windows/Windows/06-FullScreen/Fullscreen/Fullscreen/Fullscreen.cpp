@@ -102,11 +102,11 @@ void ToggleFullScreen(void)
 	//Code
 	if (false == gbFullscreen)
 	{
-		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
+		dwStyle = GetWindowLong(ghwnd, GWL_STYLE); //GWL_STYLE = GetWindowLong_STYLE
 
-		if (dwStyle & WS_OVERLAPPEDWINDOW)
+		if (dwStyle & WS_OVERLAPPEDWINDOW) //check whether WS_OVERLAPPEDWINDOW is present in the dwStyle or not.
 		{
-			if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
+			if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi)) 
 			{
 				SetWindowLong(ghwnd, GWL_STYLE, (dwStyle & ~WS_OVERLAPPEDWINDOW)); //Removed WS_OVERLAPPEDWINDOW
 				SetWindowPos(ghwnd, HWND_TOP,

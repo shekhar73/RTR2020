@@ -10,7 +10,7 @@ LRESULT CALLBACK WndProc( HWND,
 						);
 
 // WinMain()
-int WINAPI WinMain( HINSTANCE hInstance, 
+int WINAPI WinMain( HINSTANCE hInstance,
 					HINSTANCE hPrevInstace,
 					LPSTR lpszCmdLine, 
 					int iCmdShow
