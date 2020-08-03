@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	//Local function declarations
 	void Initialize(void);
-	//void Display(void);
+	void Display(void);
 
 	if (fopen_s(&logFile, "SomshekharLogFile.txt", "w") != 0)
 	{
@@ -109,7 +109,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 				//Here you should call update function for OpenGL rendering
 
 				//Here you should Display function for OpenGL rendering
-				//Display();
+				Display();
 			}
 		}
 	}
@@ -128,10 +128,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	//code
 	switch (iMsg)
 	{
-	case WM_PAINT:
-		Display();
-		break;
-
+	
 	case WM_SETFOCUS:
 		gbActiveWindow = true;
 		break;
