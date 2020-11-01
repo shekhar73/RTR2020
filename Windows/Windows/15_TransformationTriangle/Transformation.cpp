@@ -1,5 +1,6 @@
 // header files
 #include<windows.h>
+#include "Transformation.h"
 #include<stdio.h>
 #include<gl/GL.h>
 #include<gl/GLU.h>
@@ -48,18 +49,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	wndclass.cbWndExtra = 0;
 	wndclass.lpfnWndProc = WndProc;
 	wndclass.hInstance = hInstance;
-	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
-	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 
 	RegisterClassEx(&wndclass);
 
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW,
 		szAppName,
-		TEXT("SOMSHEKHAR KARLE"),
+		TEXT("Transformation"),
 		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
 		((GetSystemMetrics(SM_CXSCREEN) / 2) - (WIN_WEIDTH / 2)),
 		((GetSystemMetrics(SM_CYSCREEN) / 2) - (WIN_HEIGHT / 2)),

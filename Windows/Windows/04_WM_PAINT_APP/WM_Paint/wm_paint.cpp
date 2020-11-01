@@ -4,7 +4,6 @@
 //Global function delcarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-
 //WinMain()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {

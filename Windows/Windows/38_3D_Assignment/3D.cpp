@@ -1,4 +1,5 @@
 #include<windows.h>
+#include"3D.h"
 #include<stdio.h>
 #include<gl/GL.h>
 #include<gl/GLU.h>
@@ -47,9 +48,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszcmdLi
 	wndclass.hInstance = hInstance;
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
 	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
 
@@ -405,13 +406,13 @@ void Display(void)
 
 	glEnd();
 
-	t_angle += 0.01f;
+	t_angle += 0.1f;
 	if (t_angle >= 360.0f)
 	{
 		t_angle = 0.0f;
 	}
 
-	r_angle += 0.01f;
+	r_angle += 0.1f;
 	if (r_angle >= 360.0f)
 	{
 		r_angle = 0.0f;

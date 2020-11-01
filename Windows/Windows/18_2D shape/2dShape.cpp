@@ -1,5 +1,6 @@
 //Headers
 #include <windows.h>
+#include "2dShape.h"
 #include <stdio.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -40,12 +41,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	wndclass.cbWndExtra = 0;
 	wndclass.lpfnWndProc = WndProc;
 	wndclass.hInstance = hInstance;
-	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
-	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 
 	RegisterClassEx(&wndclass);
 

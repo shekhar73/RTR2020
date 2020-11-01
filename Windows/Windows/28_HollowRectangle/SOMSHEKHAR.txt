@@ -1,2 +1,0 @@
-Inside WM_CREATE
-Log file closed successfully and program is completed successfully

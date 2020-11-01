@@ -1,4 +1,5 @@
 #include<windows.h>
+#include"GraphPaper.h"
 #include<stdio.h>
 #include<gl/GL.h>
 #include<gl/GLU.h>
@@ -45,9 +46,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszcmdLi
 	wndclass.hInstance = hInstance;
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
 	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
 

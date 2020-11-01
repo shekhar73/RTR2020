@@ -1,2 +1,0 @@
-Inside WM_CREATE=>India is my country and I love my country. !!!
-Log file closed successfully and program is completed successfully

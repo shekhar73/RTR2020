@@ -1,4 +1,5 @@
 #include<windows.h>
+#include"CircleOnGraph.h"
 #include<stdio.h>
 #include<gl/GL.h>
 #include<gl/GLU.h>
@@ -47,9 +48,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszcmdLi
 	wndclass.hInstance = hInstance;
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
 	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 	wndclass.lpszClassName = szAppName;
 	wndclass.lpszMenuName = NULL;
 
@@ -277,7 +278,7 @@ void Display(void)
 	GLfloat inRadius = 0.0f;
 	GLfloat x1_base = 0.0f, y1_base = 0.0f;
 
-	GLfloat angle = 0.0f, axis;
+	GLfloat angle = 0.0f;
 	GLint CirclePoints = 1000;
 
 	GLfloat x1 = 0.0f, y1 = 0.5f;
@@ -508,13 +509,13 @@ void Display(void)
 	// End of Circle
 	///////////////////////////////////////////////////////////////////////////////////
 
-	x_point_circle -= 0.00030f;
-	y_point_circle -= 0.000150f;
-	x_point_triangle -= 0.00030f;
-	y_point_triangle -= 0.000150f;
-	y_point -= 0.00020f;
+	x_point_circle -= 0.0030f;
+	y_point_circle -= 0.00150f;
+	x_point_triangle -= 0.0030f;
+	y_point_triangle -= 0.00150f;
+	y_point -= 0.0020f;
 
-	angle_rotate += 0.1f;
+	angle_rotate += 0.5f;
 	if (angle_rotate >= 360.0f)
 	{
 		angle_rotate = 0.0f;
