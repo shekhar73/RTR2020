@@ -1,0 +1,3 @@
+#include "TexturedSmily.h"
+MYICON 			ICON 	astromedicomp.ico
+SMILY_BITMAP 	BITMAP	Smily.bmp
