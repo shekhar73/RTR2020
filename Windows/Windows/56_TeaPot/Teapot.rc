@@ -1,0 +1,3 @@
+#include "TeapotHeader.h"
+MYICON ICON astromedicomp.ico
+MARBLE_BITMAP 	BITMAP 	Marble.bmp

@@ -1,0 +1,4 @@
+#include "TwoLightsOnPyramid.h"
+MYICON ICON astromedicomp.ico
+STONE_BITMAP	BITMAP	Stone.bmp
+
