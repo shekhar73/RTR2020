@@ -2,15 +2,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include "Teapot.h"
 
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
+#include <SOIL/SOIL.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 #include <X11/keysym.h>
+
+bool bTexture = false;
+bool bLight = false;
 
 //namespaces
 using namespace std;
@@ -22,9 +27,24 @@ XVisualInfo *gpXVisualInfo	= NULL;
 Colormap gColormap;
 Window gWindow;
 GLXContext gGLXContext;
+GLuint marbleTexture;
 
 int giWindowWidth			= 800;
 int giWindowHeight			= 600;
+
+GLUquadric* quadric = NULL;
+
+GLfloat lightAmbiant[] = { 1.0f, 1.0f, 1.0f, 1.0f };	// grey light
+GLfloat lightDefuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };	// white light
+GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };	// white light
+GLfloat lightPosition[] = { 100.0f, 100.0f, 100.0f, 1.0f };	// light from +z to -z
+
+GLfloat materialAmbiant[] = { 0.0f, 0.0f, 0.0f, 1.0f };	// grey light
+GLfloat materialDefuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };	// white light
+GLfloat materialSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };	// white light
+GLfloat materialShinyness = 128.0f;
+
+static GLfloat angle = 0.0f;
 
 // entry-point function
 int main(void)
@@ -83,6 +103,41 @@ int main(void)
 					}
 					break;
 
+					case 'L':
+					case 'l':
+						if(bLight == false)
+						{
+							glEnable(GL_LIGHTING);
+							bLight = true;
+						}
+						else
+						{
+							glDisable(GL_LIGHTING);
+							bLight = false;
+						}
+					break;
+
+					case 'A':
+					case 'a':
+						angle += 1.0f;
+						if (angle == 360.0f)
+							angle = 0.0f;
+					break;
+
+					case 'T':
+					case 't':
+						if (bTexture == false)
+						{
+							glEnable(GL_TEXTURE_2D);
+							bTexture = true;
+						}
+						else
+						{
+							glDisable(GL_TEXTURE_2D);
+							bTexture = false;
+						}
+						break;
+
 					default:
 					break;
 
@@ -126,11 +181,14 @@ void CreateWindow(void)
 	int defaultScreen;
 	int defaultDepth;
 	int styleMask;
-	static int frameBufferAttributes[] = {GLX_RGBA,
+	static int frameBufferAttributes[] = {GLX_DOUBLEBUFFER,
+											True,
+											GLX_RGBA,
 											GLX_RED_SIZE, 8,
 											GLX_GREEN_SIZE, 8,
 											GLX_BLUE_SIZE, 8,
 											GLX_ALPHA_SIZE, 8,
+											GLX_DEPTH_SIZE, 24,
 											0};
 
 	//code
@@ -182,7 +240,7 @@ void CreateWindow(void)
 		exit(1);
 	}
 
-	XStoreName(gpDisplay, gWindow, "My First Window : SOMSHEKHAR KARLE");
+	XStoreName(gpDisplay, gWindow, "Somshekhar Karle");
 
 	Atom windowManagerDelete	=	XInternAtom(gpDisplay, "WM_DELETE_WINDOW", True);
 	XSetWMProtocols(gpDisplay, gWindow, &windowManagerDelete, 1);
@@ -208,7 +266,7 @@ void ToggleFullScreen(void)
 	xev.xclient.format 			= 32;
 	xev.xclient.data.l[0] 		= bFullScreen ? 0 : 1;
 
-	fullscreen 					    = XInternAtom(gpDisplay, "_NET_WM_STATE_FULLSCREEN", False);
+	fullscreen 					= XInternAtom(gpDisplay, "_NET_WM_STATE_FULLSCREEN", False);
 	xev.xclient.data.l[1] 		= fullscreen;
 
 	XSendEvent(gpDisplay, RootWindow(gpDisplay, gpXVisualInfo->screen), False, StructureNotifyMask, &xev);
@@ -218,11 +276,57 @@ void ToggleFullScreen(void)
 void Initialize()
 {
 	void Resize(int, int);
+	GLuint LoadBitmapAsTexture(const char*);
 
 	gGLXContext = glXCreateContext(gpDisplay, gpXVisualInfo, NULL, GL_TRUE);
 	glXMakeCurrent(gpDisplay, gWindow, gGLXContext);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glShadeModel(GL_SMOOTH);
+	glClearDepth(1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);	
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	glEnable(GL_TEXTURE_2D);
+	marbleTexture = LoadBitmapAsTexture("Marble.bmp");
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbiant);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDefuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiant);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDefuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
+	glMaterialf(GL_FRONT, GL_SHININESS, materialShinyness);
+
+	glEnable(GL_LIGHT0);
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	Resize(giWindowWidth, giWindowHeight);
+}
+
+GLuint LoadBitmapAsTexture(const char* path)
+{
+	// Variable declarations
+	int width, height;
+	unsigned char* imageData = NULL;
+	GLuint textureID;
+
+	// code
+	imageData = SOIL_load_image(path, &width, &height, NULL, SOIL_LOAD_RGB);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+
+	SOIL_free_image_data(imageData);
+
+	return textureID;
 }
 
 void Resize(int width, int height)
@@ -238,23 +342,35 @@ void Resize(int width, int height)
 
 void Draw(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	//Code
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, -3.0f);
+	
+	glTranslatef(0.0f, 0.0f, -2.0f);
+	glBindTexture(GL_TEXTURE_2D, marbleTexture);
+	glRotatef(angle, 0.0f, 1.0f, 0.0f);
+
 	glBegin(GL_TRIANGLES);
 
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 1.0f, 0.0f);
+	for(int i = 0; i < sizeof(face_indices) / sizeof(face_indices[0]); i++)
+	{
+		for(int j = 0; j < 3; j++)
+		{
+			int vi = face_indices[i][j];
+			int ni = face_indices[i][j + 3];
+			int ti = face_indices[i][j + 6];
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+			glNormal3f(normals[ni][0], normals[ni][1], normals[ni][2]);
+			glTexCoord2f(textures[ti][0], textures[ti][1]);
+			glVertex3f(vertices[vi][0], vertices[vi][1], vertices[vi][2]);
+		}
+	}
 
 	glEnd();
-	glFlush();
+
+	glXSwapBuffers(gpDisplay, gWindow);
 }
 
 void uninitialize(void)
