@@ -1,51 +1,56 @@
-//HEADER FILES
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <gl/glew.h>
+#include <gl/GL.h>
 
-#include<Windows.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<gl/glew.h>
-#include<gl/gl.h>
-#include"Sphere.h"
+#include "Sphere.h"
+#include "vmath.h"	// It is a C++ file
 
-#include"vmath.h"
+#pragma comment(lib, "glew32.lib")
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "Sphere.lib")
 
-#define       WIN_WIDTH      800
-#define       WIN_HEIGHT     600
-
-#pragma comment(lib,"glew32.lib")
-#pragma comment(lib,"OpenGL32.lib")
-#pragma comment(lib,"Sphere.lib")
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 600
 
 using namespace vmath;
 
+// we will give these values to the VERTEX which have position, color, normal, texture,
+// velocity, gravity, viscocity, shineness, damping, blurring...more properties
 enum
 {
-   SSK_ATTRIBUTE_POSITION = 0,
-    SSK_ATTRIBUTE_COLOR,
-    SSK_ATTRIBUTE_NORMAL,
-    SSK_ATTRIBUTE_TEXTURE0
+	SSK_ATTRIBUTE_POSITION	= 0,
+	SSK_ATTRIBUTE_COLOR,
+	SSK_ATTRIBUTE_NORMAL,
+	SSK_ATTRIBUTE_TEXCORD
 };
 
-FILE* gpFile = NULL;
+// Prototype of WndProc() delclared Globally
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-bool gbFullScreen = false;
+// Global variable declarations
+FILE *gpFile			=	NULL;
+HWND ghwnd				= 	NULL;
+HDC ghdc				=	NULL;
+HGLRC ghrc				= 	NULL;
+FILE* gpVendorInfoFile	= NULL;
+
 DWORD dwStyle;
-WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
-HWND ghwnd = NULL;
+WINDOWPLACEMENT wpPrev	= { sizeof(WINDOWPLACEMENT) };
 
-bool gbActiveWindow = false;
-
-HDC ghdc = NULL;
-HGLRC ghrc = NULL;
-
-float sphere_vertices[1146];
-float sphere_normals[1146];
-float sphere_textures[764];
-unsigned short sphere_elements[2280];
+bool gbActiveWindow			= false;
+bool gbEscapeKeyIsPressed	= false;
+bool gbFullScreen			= false;
 
 GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
+
+GLfloat sphere_vertices[1146];
+GLfloat sphere_normals[1146];
+GLfloat sphere_textures[764];
+unsigned short sphere_elements[2280];
 
 GLuint gVao_sphere;
 GLuint gNumVertices;
@@ -54,519 +59,621 @@ GLuint gVbo_sphere_position;
 GLuint gVbo_sphere_normal;
 GLuint gVbo_sphere_element;
 
-GLuint mvpUniform;
+GLuint gMVPUniform;
 
-mat4 perspectiveProjectionMatrix;
+// It is a matrix of 4 X 4 which is declared in vmath.h header file. It will be used for transformation
+mat4 gPerspectiveProjectionMatrix;
 
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
+// Entry Point function i.e. main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
-    void Initialize(void);
-    void Display(void);
+	// Function Prototype
+	void Initialize(void);
+	void UnInitialize(void);
+	void Display(void);
 
-    WNDCLASSEX wndclass;
-    MSG msg;
-    TCHAR szAppName[] = TEXT("MyApp");
-    HWND hwnd;
-    bool bDone = false;
-    int X = 0;
-    int Y = 0;
+	// Variable declarations
+	WNDCLASSEX wndclass;
+	HWND hwnd;
+	MSG msg;
+	TCHAR szClassName[] = TEXT("OpenGLPP");
+	bool bDone = false;
 
-    if (fopen_s(&gpFile, "LogFile.txt", "w") != 0)
-    {
-        printf("Can't Open File!!!Exitting Now!!\n\n");
-        exit(1);
-    }
-    fprintf(gpFile, "Code Starts Here!!!\n\n");
+	// code
+	
+	if (fopen_s(&gpFile, "LogFile.txt", "w") != 0)
+	{
+		MessageBox(NULL, TEXT("Log File Can Not Be Created\nExitting..."), TEXT("Error"), MB_OK | MB_TOPMOST | MB_ICONSTOP);
+		exit(0);
+	}
+	else
+	{
+		fprintf(gpFile, "Log File Is Successfully Opened.\n");
+	}
 
-    X = GetSystemMetrics(SM_CXSCREEN) / 2 - WIN_WIDTH / 2;
-    Y = GetSystemMetrics(SM_CYSCREEN) / 2 - WIN_HEIGHT / 2;
+	wndclass.cbSize			= sizeof(WNDCLASSEX);
+	wndclass.style 			= CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wndclass.cbClsExtra		= 0;
+	wndclass.cbWndExtra		= 0;
+	wndclass.hInstance 		= hInstance;
+	wndclass.hbrBackground 	= (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wndclass.hIcon 			= LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hCursor 		= LoadCursor(NULL, IDC_ARROW);
+	wndclass.hIconSm 		= LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.lpfnWndProc 	= WndProc;
+	wndclass.lpszClassName	= szClassName;
+	wndclass.lpszMenuName 	= NULL;
 
-    wndclass.cbSize = sizeof(WNDCLASSEX);
-    wndclass.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
-    wndclass.cbWndExtra = 0;
-    wndclass.cbClsExtra = 0;
-    wndclass.lpfnWndProc = WndProc;
-    wndclass.hInstance = hInstance;
-    wndclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wndclass.lpszClassName = szAppName;
-    wndclass.lpszMenuName = NULL;
-    wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	RegisterClassEx(&wndclass);
 
-    RegisterClassEx(&wndclass);
+	hwnd = CreateWindowEx(WS_EX_APPWINDOW,
+		szClassName,
+		TEXT("OpenGL Programmable Pipeline : Sphere"),
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
+		((GetSystemMetrics(SM_CXSCREEN) / 2) - (WIN_WIDTH / 2)),
+		((GetSystemMetrics(SM_CYSCREEN) / 2) - (WIN_HEIGHT / 2)),
+		WIN_WIDTH,
+		WIN_HEIGHT,
+		NULL,
+		NULL,
+		hInstance,
+		NULL);
 
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW,
-        szAppName,
-        TEXT("Sphere SK"),
-        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
-        X,
-        Y,
-        WIN_WIDTH,
-        WIN_HEIGHT,
-        NULL,
-        NULL,
-        hInstance,
-        NULL);
+	ghwnd = hwnd;
 
-    ghwnd = hwnd;
+	ShowWindow(hwnd, iCmdShow);
+	SetForegroundWindow(hwnd);
+	SetFocus(hwnd);
 
-    Initialize();
+	Initialize();
 
-    ShowWindow(hwnd, iCmdShow);
+	while(bDone == false)
+	{
+		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			if(msg.message == WM_QUIT)
+			{
+				bDone = true;
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+		else
+		{
+			Display();
 
-    SetForegroundWindow(hwnd);
-    SetFocus(hwnd);
+			if(gbActiveWindow == true)
+			{
+				if(gbEscapeKeyIsPressed == true)
+				{
+					bDone = true;
+				}
+			}
+		}
+	}
+	UnInitialize();
 
-    while (bDone == false)
-    {
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            if (msg.message == WM_QUIT)
-            {
-                bDone = true;
-            }
-            else
-            {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-        }
-        else
-        {
-            if (gbActiveWindow == true)
-            {
-                Display();
-            }
-        }
-    }
-
-    return((int)msg.wParam);
+	return ((int)msg.wParam);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    void ToggleFullScreen(void);
-    void Resize(int, int);
-    void uninitialize(void);
+	// function declaration
+	void ToggleFullScreen(void);
+	void Resize(int, int);
+	void UnInitialize();
 
-    switch (iMsg)
-    {
-    case WM_CREATE:
-        break;
+	// local variable
 
-    case WM_KEYDOWN:
-        switch (wParam)
-        {
-        case VK_ESCAPE:
-            DestroyWindow(hwnd);
-            break;
+	// code
+	switch (iMsg)
+	{
+	case WM_ACTIVATE:
+		if(HIWORD(wParam) == 0)
+		{
+			gbActiveWindow = true;
+		}
+		else
+		{
+			gbActiveWindow = false;
+		}
+		break;
 
-        case 0x46:
-        case 0x66:
-            ToggleFullScreen();
-            break;
+	case WM_ERASEBKGND:
+		return 0;
 
-        default:
-            break;
-        }
-        break;
+	case WM_SIZE:
+		Resize(LOWORD(lParam), HIWORD(lParam));
+		break;
 
-    case WM_SIZE:
-        Resize(LOWORD(lParam), HIWORD(lParam));
-        break;
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			if (gbEscapeKeyIsPressed == false)
+			{
+				gbEscapeKeyIsPressed = true;
+			}
+			break;
 
-    case WM_SETFOCUS:
-        gbActiveWindow = true;
-        break;
+		case 0x46:
+		case 0x66:
+			if (gbFullScreen == false)
+			{
+				ToggleFullScreen();
+				gbFullScreen = true;
+			}
+			else
+			{
+				ToggleFullScreen();
+				gbFullScreen = false;
+			}
+			break;
 
-    case WM_KILLFOCUS:
-        gbActiveWindow = false;
-        break;
+		default:
+			break;
+		}
+		break;
 
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        uninitialize();
-        break;
-    }
+	case WM_LBUTTONDOWN:
+		break;
 
-    return(DefWindowProc(hwnd, iMsg, wParam, lParam));
+	case WM_CLOSE:
+		UnInitialize();
+		break;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+
+	default:
+		break;
+	}
+
+	return (DefWindowProc(hwnd, iMsg, wParam, lParam));
 }
 
 void ToggleFullScreen()
 {
-    MONITORINFO mi = { sizeof(MONITORINFO) };
+	MONITORINFO mi = { sizeof(MONITORINFO) };
 
-    if (gbFullScreen == false)
-    {
-        dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
+	if (gbFullScreen == false)
+	{
+		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
 
-        if (dwStyle & WS_OVERLAPPEDWINDOW)
-        {
-            if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
-            {
-                SetWindowLong(ghwnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
-                SetWindowPos(ghwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_FRAMECHANGED | SWP_NOZORDER);
-            }
-        }
-        ShowCursor(FALSE);
-        gbFullScreen = true;
-    }
-    else
-    {
-        SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
-        SetWindowPlacement(ghwnd, &wpPrev);
-        SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
-        ShowCursor(TRUE);
-        gbFullScreen = false;
-    }
+		if (dwStyle & WS_OVERLAPPEDWINDOW)
+		{
+			if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
+			{
+				SetWindowLong(ghwnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
+				SetWindowPos(ghwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_FRAMECHANGED | SWP_NOZORDER);
+			}
+		}
+		ShowCursor(FALSE);
+		gbFullScreen = true;
+	}
+	else
+	{
+		SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+		SetWindowPlacement(ghwnd, &wpPrev);
+		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+		ShowCursor(TRUE);
+		gbFullScreen = false;
+	}
 }
 
-void Initialize()
+void Initialize(void)
 {
-    void uninitialize();
-    void Resize(int, int);
+	// Function prototypes
+	void Resize(int, int);
+	void UnInitialize();
+	
+	// Variable declarations
+	PIXELFORMATDESCRIPTOR pfd;
+	int iPixelFormatIndex;
 
-    PIXELFORMATDESCRIPTOR pfd;
-    int iPixelFormatIndex;
+	// code
+	ghdc = GetDC(ghwnd);
+	ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
 
-    ghdc = GetDC(ghwnd);
-    ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
+	// Initialization of structure 'PIXELFORMATDESCRIPTO'
+	// Parallel to glutInitDisplayMode()
+	pfd.nSize 	 	= sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion	= 1;
+	pfd.dwFlags 	= PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType  = PFD_TYPE_RGBA;
+	pfd.cColorBits 	= 32;
+	pfd.cRedBits 	= 8;
+	pfd.cGreenBits 	= 8;
+	pfd.cBlueBits 	= 8;
+	pfd.cAlphaBits 	= 8;
+	pfd.cDepthBits 	= 32;
 
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 32;
-    pfd.cRedBits = 8;
-    pfd.cBlueBits = 8;
-    pfd.cGreenBits = 8;
-    pfd.cAlphaBits = 8;
-    pfd.cDepthBits = 32;
+	ghdc = GetDC(ghwnd);
 
-    iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
-    if (iPixelFormatIndex == 0)
-    {
-        fprintf(gpFile, "ChoosePixelFormat() Failed!!!");
-        DestroyWindow(ghwnd);
-    }
+	// choos a pixel format which best matches with that of 'pfd'
+	iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
+	if(iPixelFormatIndex == 0)
+	{
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
 
-    if (SetPixelFormat(ghdc, iPixelFormatIndex, &pfd) == FALSE)
-    {
-        fprintf(gpFile, "SetPixelFormat() Failed!!!");
-        DestroyWindow(ghwnd);
-    }
+	// set the pixel format chosen above
+	if(SetPixelFormat(ghdc, iPixelFormatIndex, &pfd) == FALSE)
+	{
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
 
-    ghrc = wglCreateContext(ghdc);
+	// create OpenGL rendering context
+	ghrc = wglCreateContext(ghdc);
+	if(ghrc == NULL)
+	{
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
 
-    if (ghrc == NULL)
-    {
-        fprintf(gpFile, "wglCreateContext() Failed!!!");
-        DestroyWindow(ghwnd);
-    }
+	// make the rendering above us current n the current hdc
+	if(wglMakeCurrent(ghdc, ghrc) == FALSE)
+	{
+		wglDeleteContext(ghrc);
+		ghrc = NULL;
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
 
-    if (wglMakeCurrent(ghdc, ghrc) == FALSE)
-    {
-        fprintf(gpFile, "wglMakeCurrent() Failed!!!");
-        DestroyWindow(ghwnd);
-    }
+	// GLEW Initialization code for GLSL (IMPORTANT : It must be here. 
+	//Means after creating OpenGL context but before using any OpengGL function)
+	GLenum glew_error = glewInit();
+	if(glew_error != GLEW_OK)
+	{
+		wglDeleteContext(ghrc);
+		ghrc = NULL;
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	//*** VERTEX SHADER ***
+	//////////////////////////////////////////////////////////////////////////////////////
 
-    GLenum glew_error = glewInit();
-    if (glew_error != GLEW_OK)
-    {
-        wglDeleteContext(ghrc);
-        ghrc = NULL;
-        ReleaseDC(ghwnd, ghdc);
-        ghdc = NULL;
-    }
+	// Create Shader
+	gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
-    //Create Shader
-    gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+	// Provide source code to shader
+	const GLchar *vertexShaderSourceCode = 
+		"#version 440 core" \
+		"\n" \
+		"in vec4 vPosition;" \
+		"uniform mat4 u_mvpMatrix;" \
+		"void main(void)" \
+		"\n" \
+		"{" \
+		"gl_Position = u_mvpMatrix * vPosition;" \
+		"}";
 
-    //Feed Shader
-    const GLchar* vertexShaderSourceCode =
-        "#version 440 core" \
-        "\n" \
-        "in vec4 vPosition;" \
-        "uniform mat4 u_mvp_matrix;" \
-        "void main(void)" \
-        "{" \
-        "gl_Position = u_mvp_matrix * vPosition;" \
-        "}";
+	//gl_Position is inbuilt variable in shader
+	// feed the source code to your shaderobject
+	glShaderSource(gVertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
 
-    glShaderSource(gVertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL);
+	// compile shader
+	glCompileShader(gVertexShaderObject);
+	
+	GLint iInfoLogLength = 0;
+	GLint iShaderCompiledStatus = 0;
+	char* szInfoLog = NULL;
 
-    //Compile Shader
-    glCompileShader(gVertexShaderObject);
+	// shader compilation error checking
 
-    GLint infoLogLength = 0;
-    GLint shaderCompiledStatus = 0;
-    char* szInfoLog = NULL;
-    glGetShaderiv(gVertexShaderObject, GL_COMPILE_STATUS, &shaderCompiledStatus);
-    if (shaderCompiledStatus == GL_FALSE)
-    {
-        glGetShaderiv(gVertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-        if (infoLogLength > 0)
-        {
-            szInfoLog = (char*)malloc(sizeof(char) * infoLogLength);
-            if (szInfoLog != NULL)
-            {
-                GLsizei written;
-                glGetShaderInfoLog(gVertexShaderObject, infoLogLength, &written, szInfoLog);
-                fprintf(gpFile, "Vertex Shader Compilation Log = %s\n\n", szInfoLog);
-                free(szInfoLog);
-                DestroyWindow(ghwnd);
-            }
-        }
-    }
+	//void glGetShaderiv(GLuint shader, GLenum pname, GLint* params);
+	// glGetShaderiv — return a parameter from a shader object
 
-    //Create Shader
-    gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+	glGetShaderiv(gVertexShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	if (iShaderCompiledStatus == GL_FALSE)
+	{
+		glGetShaderiv(gVertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char*)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
 
-    //Feed Shader
-    const GLchar* fragmentShaderSourceCode =
-        "#version 440 core" \
-        "\n" \
-        "out vec4 FragColor;" \
-        "void main(void)" \
-        "{" \
-        "FragColor = vec4(1.0f,1.0f,1.0f,1.0f);"
-        "}";
+				// take log
+				glGetShaderInfoLog(gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
+				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
+				free(szInfoLog);
+				//destroyWindow(ghwnd);
+				UnInitialize(); //destroyWindow(ghwnd);-> call WND_DESTROY->PostQuitMessage()->MessageLoop()->uninitialize();
+				exit(0);
+			}
+		}
+	}
 
-    glShaderSource(gFragmentShaderObject, 1, (const char**)&fragmentShaderSourceCode, NULL);
 
-    //Compile
-    glCompileShader(gFragmentShaderObject);
+	///////////////////////////////////////////////////////////////////////////////////////
+	//*** FRAGMENT SHADER ***
+	///////////////////////////////////////////////////////////////////////////////////////
 
-    glGetShaderiv(gFragmentShaderObject, GL_COMPILE_STATUS, &shaderCompiledStatus);
-    if (shaderCompiledStatus == GL_FALSE)
-    {
-        glGetShaderiv(gFragmentShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-        if (infoLogLength > 0)
-        {
-            szInfoLog = (char*)malloc(sizeof(char) * infoLogLength);
-            if (szInfoLog != NULL)
-            {
-                GLsizei written;
-                glGetShaderInfoLog(gFragmentShaderObject, infoLogLength, &written, szInfoLog);
-                fprintf(gpFile, "Fragment Shader Compilation Log = %s\n\n", szInfoLog);
-                free(szInfoLog);
-                DestroyWindow(ghwnd);
-            }
-        }
-    }
+	// Create shader
+	gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
-    //Create
-    gShaderProgramObject = glCreateProgram();
+	// provide source code to shader
+	const GLchar *fragmentShaderSourceCode = 
+		"#version 440 core" \
+		"\n" \
+		"out vec4 FragColor;" \
+		"void main(void)" \
+		"\n" \
+		"{" \
+		"FragColor = vec4(1.0, 1.0, 1.0, 1.0);" \
+		"}";
 
-    //Attach
-    glAttachShader(gShaderProgramObject, gVertexShaderObject);
-    glAttachShader(gShaderProgramObject, gFragmentShaderObject);
+	glShaderSource(gFragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
 
-    glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_POSITION, "vPosition");
-    glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_COLOR, "vColor");
+	// compile shader
+	glCompileShader(gFragmentShaderObject);
 
-    //Link
-    glLinkProgram(gShaderProgramObject);
+	// fragment shader compilation error checking
 
-    GLint shaderProgramLinkStatus = 0;
-    glGetProgramiv(gShaderProgramObject, GL_LINK_STATUS, &shaderProgramLinkStatus);
-    if (shaderProgramLinkStatus == GL_FALSE)
-    {
-        glGetProgramiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &infoLogLength);
-        if (infoLogLength > 0)
-        {
-            szInfoLog = (char*)malloc(sizeof(char) * infoLogLength);
-            if (szInfoLog != NULL)
-            {
-                GLsizei written;
-                glGetProgramInfoLog(gFragmentShaderObject, infoLogLength, &written, szInfoLog);
-                fprintf(gpFile, "Shader Program Link Log = %s\n\n", szInfoLog);
-                free(szInfoLog);
-                DestroyWindow(ghwnd);
-            }
-        }
-    }
+	
+	glGetShaderiv(gFragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	if (iShaderCompiledStatus == GL_FALSE)
+	{
+		glGetShaderiv(gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char*)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
+				fprintf(gpFile, "Fragment Shader Compilation Log %s\n", szInfoLog);
+				free(szInfoLog);
+				UnInitialize();
+				exit(0);
+			}
+		}
+	}
 
-    mvpUniform = glGetUniformLocation(gShaderProgramObject, "u_mvp_matrix");
-    
-    getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
-    gNumVertices = getNumberOfSphereVertices();
-    gNumElements = getNumberOfSphereElements();
-   
-    // vao
-    glGenVertexArrays(1, &gVao_sphere);
-    glBindVertexArray(gVao_sphere);
+	/////////////////////////////////////////////////////////////////////////////////////
+	//*** SHADER PROGRAM ***
+	/////////////////////////////////////////////////////////////////////////////////////
 
-    // position vbo
-    glGenBuffers(1, &gVbo_sphere_position);
-    glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+	// create
+	gShaderProgramObject = glCreateProgram();
 
-    glVertexAttribPointer(SSK_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	// attach vertex shader to shader program
+	glAttachShader(gShaderProgramObject, gVertexShaderObject);
 
-    glEnableVertexAttribArray(SSK_ATTRIBUTE_POSITION);
+	// attach fragment shader to shader program
+	glAttachShader(gShaderProgramObject, gFragmentShaderObject);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// pre-link binding of shader program object with vertex shader position attribute in your enum to catch the in and unifrom attributes
+	glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_POSITION, "vPosition");
 
-    // normal vbo
-    glGenBuffers(1, &gVbo_sphere_normal);
-    glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+	// link shader
+	glLinkProgram(gShaderProgramObject); 
 
-    glVertexAttribPointer(SSK_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	GLint iShaderProgramLinkStatus = 0;
 
-    glEnableVertexAttribArray(SSK_ATTRIBUTE_NORMAL);
+	// Reset values
+	iInfoLogLength = 0;
+	szInfoLog = NULL;
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// shader link error checking
+	glGetProgramiv(gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
 
-    // element vbo
-    glGenBuffers(1, &gVbo_sphere_element);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	if (iShaderProgramLinkStatus == GL_FALSE)
+	{
+		glGetShaderiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char*)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
+				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
+				free(szInfoLog);
+				UnInitialize();
+				exit(0);
+			}
+		}
 
-    // unbind vao
-    glBindVertexArray(0);
+	}
 
-    glShadeModel(GL_SMOOTH);
-    glClearDepth(1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	// get MVP uniform location
+	// post linking
+	gMVPUniform = glGetUniformLocation(gShaderProgramObject, "u_mvpMatrix");
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
+	gNumVertices = getNumberOfSphereVertices();
+	gNumElements = getNumberOfSphereElements();
+	
+	// It will store all the below 6 steps so that we can reuse it in draw function
+	glGenVertexArrays(1, &gVao_sphere);
+	glBindVertexArray(gVao_sphere);
+	
+	glGenBuffers(1, &gVbo_sphere_position);	//like glGenTextures() in FFP
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);	// like glBindTexture() in FFP
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(SSK_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(SSK_ATTRIBUTE_POSITION);
+	glBindBuffer(GL_ARRAY_BUFFER, 0); 	// Unbind the BUFFER
 
-    perspectiveProjectionMatrix = mat4::identity();
 
-    Resize(WIN_WIDTH, WIN_HEIGHT);
+	// Normal vbo
+	glGenBuffers(1, &gVbo_sphere_normal);	//like glGenTextures() in FFP
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);	// like glBindTexture() in FFP
+	glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+	glVertexAttribPointer(SSK_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(SSK_ATTRIBUTE_NORMAL);
+	glBindBuffer(GL_ARRAY_BUFFER, 0); 	// Unbind the BUFFER
+
+
+
+	// Element vbo
+	glGenBuffers(1, &gVbo_sphere_element);	//like glGenTextures() in FFP
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);	// like glBindTexture() in FFP
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); 	// Unbind the BUFFER
+
+	// Unbind Vao
+	glBindVertexArray(0);
+
+	glShadeModel(GL_SMOOTH);
+	// set-up detpth buffer
+	glClearDepth(1.0f);
+	// enable depth testing
+	glEnable(GL_DEPTH_TEST);
+	// depth test to do
+	glDepthFunc(GL_LEQUAL);
+	// set really nice percpective calculations?
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	// we will always cull back faces for better performance
+	glEnable(GL_CULL_FACE);
+
+	// set background color to which it will display even if it will empty.
+	// THIS LINE CAN BE IN drawRect().
+	glClearColor(0.0f, 0.0f, 1.0f, 0.0f);	// blue
+
+	// set PerspectiveProjectionMatrix to identity matrix
+	gPerspectiveProjectionMatrix = mat4::identity();
+
+	// resize
+	Resize(WIN_WIDTH, WIN_HEIGHT);
+}
+
+void Display(void)
+{
+	// code
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// start using OpenGL program object
+	glUseProgram(gShaderProgramObject);
+
+	// OpenGL Drawing
+	// set modelview & modelviewprojection matrices to identity
+	mat4 TranslateMatrix = vmath::translate(0.0f, 0.0f, -3.0f);
+	mat4 modelViewMatrix = TranslateMatrix;
+	mat4 modelViewProjectionMatrix = mat4::identity(); //in resize of FFP glMatrixMode(GL_PROJECTION); glLoadIdentity();
+
+	// multiply the modelview and perspective matrix to get modelviewprojection matrix
+	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix;	// ORDER IS IMPORTANT
+
+	// pass above modelviewprojection matrix to the vertex shader in 'u_mvpMatrix' shader variable
+	// whose position value we already calculated in initWithFrame() by using glGetUniformLocation()
+	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+
+	// *** bind vao ***
+	// all the rendering data is recoreded in initialize() by using glGenVertexArrays(1, &gVao);
+	glBindVertexArray(gVao_sphere);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+
+	// *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+	glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+
+	// *** unbind vao ***
+	glBindVertexArray(0);
+
+	// Stop using OpenGL program object
+	glUseProgram(0);
+
+	// OpenGL Drawing
+	SwapBuffers(ghdc);
+
 }
 
 void Resize(int width, int height)
 {
-    if (height == 0)
-        height = 1;
+	if(height == 0)
+		height = 1;
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-    glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-
-    perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	//glOrtho(left, right, bottom, top, near, far);
+	gPerspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 }
 
-void Display()
+void UnInitialize()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// UNINITALIZATION CODE
+	if(gbFullScreen == true)
+	{
+		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
+		SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+		SetWindowPlacement(ghwnd, &wpPrev);
+		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED);
+		ShowCursor(TRUE);
+	}
 
-    //Start Using OpenGL Program
-    glUseProgram(gShaderProgramObject);
+	// destory vao
+	if (gVao_sphere)
+	{
+		glDeleteVertexArrays(1, &gVao_sphere);
+		gVao_sphere = 0;
+	}
 
-    mat4 modelViewMatrix = mat4::identity();
-    mat4 modelViewProjectionMatrix = mat4::identity();
-    mat4 translateMatrix = vmath::translate(0.0f, 0.0f, -3.0f);
+	// destroy vbo
+	if (gVbo_sphere_position)
+	{
+		glDeleteBuffers(1, &gVbo_sphere_position);
+		gVbo_sphere_position = 0;
+	}
 
-    modelViewMatrix = translateMatrix;
+	if (gVbo_sphere_normal)
+	{
+		glDeleteBuffers(1, &gVbo_sphere_normal);
+		gVbo_sphere_normal = 0;
+	}
 
-    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
 
-    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+	// detach vertex shader from shader program object
+	glDetachShader(gShaderProgramObject, gVertexShaderObject);
+	// detach fragment shader from shader program object
+	glDetachShader(gShaderProgramObject, gFragmentShaderObject);
 
-    // *** bind vao ***
-    glBindVertexArray(gVao_sphere);
+	// delete vertex shader object
+	glDeleteShader(gVertexShaderObject);
+	gVertexShaderObject = 0;
 
-    // *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
-    glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+	// delete fragment shader object
+	glDeleteShader(gFragmentShaderObject);
+	gFragmentShaderObject = 0;
 
-    // *** unbind vao ***
-    glBindVertexArray(0);
+	// delete shader program object
+	glDeleteShader(gShaderProgramObject);
+	gShaderProgramObject = 0;
 
-    //Stop OpenGL Program
-    glUseProgram(0);
+	// delete shader program object
+	glDeleteProgram(gShaderProgramObject);
+	gShaderProgramObject = 0;
 
-    SwapBuffers(ghdc);
-}
+	// unlink shader program
+	glUseProgram(0);
 
-void uninitialize()
-{
-    if (gbFullScreen == true)
-    {
-        dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
-        SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
-        SetWindowPlacement(ghwnd, &wpPrev);
-        SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED);
-        ShowCursor(TRUE);
-    }
-    
-    if (gVao_sphere)
-    {
-        glDeleteBuffers(1, &gVao_sphere);
-        gVao_sphere = 0;
-    }
+	// Deselect the rendering context
+	wglMakeCurrent(NULL, NULL);
 
-    if (gVbo_sphere_normal)
-    {
-        glDeleteBuffers(1, &gVbo_sphere_normal);
-        gVbo_sphere_normal = 0;
-    }
+	// delete the rendering context
+	wglDeleteContext(ghrc);
+	ghrc = NULL;
 
-    if (gVbo_sphere_position)
-    {
-        glDeleteBuffers(1, &gVbo_sphere_position);
-        gVbo_sphere_position = 0;
-    }
+	// Delete the device context
+	ReleaseDC(ghwnd, ghdc);
+	ghdc = NULL;
 
-    if (gShaderProgramObject)
-    {
-        glUseProgram(gShaderProgramObject);
-        GLsizei shaderCount;
-
-        glGetProgramiv(gShaderProgramObject, GL_ATTACHED_SHADERS, &shaderCount);
-
-        GLuint* pShaders = NULL;
-
-        pShaders = (GLuint*)malloc(shaderCount * sizeof(GLuint));
-        if (pShaders == NULL)
-        {
-            printf("Malloc Failed!!!Exitting Now!!\n\n");
-            exit(0);
-        }
-
-        glGetAttachedShaders(gShaderProgramObject, shaderCount, &shaderCount, pShaders);
-
-        for (GLsizei i = 0; i < shaderCount; i++)
-        {
-            glDetachShader(gShaderProgramObject, pShaders[i]);
-            glDeleteShader(pShaders[i]);
-            pShaders[i] = 0;
-            free(pShaders);
-
-            glDeleteProgram(gShaderProgramObject);
-            gShaderProgramObject = 0;
-            glUseProgram(0);
-        }
-    }
-
-    if (wglGetCurrentContext() == ghrc)
-    {
-        wglMakeCurrent(NULL, NULL);
-    }
-
-    if (ghrc)
-    {
-        wglDeleteContext(ghrc);
-        ghrc = NULL;
-    }
-
-    if (ghdc)
-    {
-        ReleaseDC(ghwnd, ghdc);
-        ghdc = NULL;
-    }
-    if (gpFile)
-    {
-        fprintf(gpFile, "Code Ends Here !!!\n\n");
-        fclose(gpFile);
-        gpFile = NULL;
-    }
+	if(gpFile)
+	{
+		fprintf(gpFile, "Log File Is Successfully Closed.\n");
+		fclose(gpFile);
+		gpFile = NULL;
+	}
 }

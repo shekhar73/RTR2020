@@ -226,37 +226,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 void ToggleFullScreen()
 {
-	// function declaration
-
-	// local variable
 	MONITORINFO mi = { sizeof(MONITORINFO) };
 
-	// code
 	if (gbFullScreen == false)
 	{
 		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
 
 		if (dwStyle & WS_OVERLAPPEDWINDOW)
 		{
-			if (GetWindowPlacement(ghwnd, &wpPrev) && (GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi)))
+			if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
 			{
 				SetWindowLong(ghwnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
-				SetWindowPos(ghwnd, HWND_TOP,
-					mi.rcMonitor.left, mi.rcMonitor.top,
-					mi.rcMonitor.right - mi.rcMonitor.left,
-					mi.rcMonitor.bottom - mi.rcMonitor.top,
-					SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(ghwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_FRAMECHANGED | SWP_NOZORDER);
 			}
 		}
-
 		ShowCursor(FALSE);
+		gbFullScreen = true;
 	}
 	else
 	{
-		SetWindowLong(ghwnd, GWL_STYLE, (dwStyle | WS_OVERLAPPEDWINDOW));
+		SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
 		SetWindowPlacement(ghwnd, &wpPrev);
-		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_NOZORDER);
+		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
 		ShowCursor(TRUE);
+		gbFullScreen = false;
 	}
 }
 
@@ -549,23 +542,64 @@ void Resize(int width, int height)
 	gPerspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 }
 
+
 void UnInitialize()
 {
-	// code
+	// UNINITALIZATION CODE
 	if (gbFullScreen == true)
 	{
 		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
 		SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
 		SetWindowPlacement(ghwnd, &wpPrev);
-		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_NOZORDER);
+		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED);
 		ShowCursor(TRUE);
 	}
+	
+	// destory vao
+	if (gVao_Pyramid)
+	{
+		glDeleteVertexArrays(1, &gVao_Pyramid);
+		gVao_Pyramid = 0;
+	}
 
+	// destroy vbo
+	if (gVbo_Position_Pyramid)
+	{
+		glDeleteBuffers(1, &gVbo_Position_Pyramid);
+		gVbo_Position_Pyramid = 0;
+	}
+	// detach vertex shader from shader program object
+	glDetachShader(gShaderProgramObject, gVertexShaderObject);
+	// detach fragment shader from shader program object
+	glDetachShader(gShaderProgramObject, gFragmentShaderObject);
+
+	// delete vertex shader object
+	glDeleteShader(gVertexShaderObject);
+	gVertexShaderObject = 0;
+
+	// delete fragment shader object
+	glDeleteShader(gFragmentShaderObject);
+	gFragmentShaderObject = 0;
+
+	// delete shader program object
+	glDeleteShader(gShaderProgramObject);
+	gShaderProgramObject = 0;
+
+	// delete shader program object
+	glDeleteProgram(gShaderProgramObject);
+	gShaderProgramObject = 0;
+
+	// unlink shader program
+	glUseProgram(0);
+
+	// Deselect the rendering context
 	wglMakeCurrent(NULL, NULL);
 
+	// delete the rendering context
 	wglDeleteContext(ghrc);
 	ghrc = NULL;
 
+	// Delete the device context
 	ReleaseDC(ghwnd, ghdc);
 	ghdc = NULL;
 

@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 #include <gl/glew.h>
 #include <gl/GL.h>
 
@@ -22,10 +22,7 @@ enum
 	SSK_ATTRIBUTE_TEXCORD,
 };
 
-// Prototype of WndProc() delclared Globally
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-// Global variable declarations
 FILE* gpFile = NULL;
 HWND ghwnd = NULL;
 HDC ghdc = NULL;
@@ -55,15 +52,13 @@ GLuint LdUniform;						// Diffuese component of light
 GLuint KdUniform;						// material diffuse component of light
 GLuint LightPositionUniform;
 
-mat4 gPerspectiveProjectionMatrix;
-
-
 bool bAnimate;
 bool bLight;
 
-GLuint gMVPUniform;
+mat4 gPerspectiveProjectionMatrix;
 
-GLfloat cubeAngle = 0.0f;
+// Prototype of WndProc() delclared Globally
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Entry Point function i.e. main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -108,7 +103,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW,
 		szClassName,
-		TEXT("OpenGL Programmable Pipeline : Window"),
+		TEXT("PP : Light Cube"),
 		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
 		((GetSystemMetrics(SM_CXSCREEN) / 2) - (WIN_WIDTH / 2)),
 		((GetSystemMetrics(SM_CYSCREEN) / 2) - (WIN_HEIGHT / 2)),
@@ -143,12 +138,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		}
 		else
 		{
-			/*if (bAnimate == true)
-			{
-				Display();
-			}*/
 			Display();
-			
+
 			if (gbActiveWindow == true)
 			{
 				if (gbEscapeKeyIsPressed == true)
@@ -159,7 +150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		}
 	}
 	UnInitialize();
-	 
+
 	return ((int)msg.wParam);
 }
 
@@ -175,90 +166,97 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	// code
 	switch (iMsg)
 	{
-		case WM_ACTIVATE:
-			if (HIWORD(wParam) == 0)
+	case WM_ACTIVATE:
+		if (HIWORD(wParam) == 0)
+		{
+			gbActiveWindow = true;
+		}
+		else
+		{
+			gbActiveWindow = false;
+		}
+		break;
+
+	case WM_ERASEBKGND:
+		return 0;
+
+	case WM_SIZE:
+		Resize(LOWORD(lParam), HIWORD(lParam));
+		break;
+
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			if (gbEscapeKeyIsPressed == false)
 			{
-				gbActiveWindow = true;
+				gbEscapeKeyIsPressed = true;
+			}
+			break;
+
+		case 0x46:
+		case 0x66:
+			if (gbFullScreen == false)
+			{
+				ToggleFullScreen();
+				gbFullScreen = true;
 			}
 			else
 			{
-				gbActiveWindow = false;
+				ToggleFullScreen();
+				gbFullScreen = false;
 			}
 			break;
 
-		case WM_ERASEBKGND:
-			return 0;
-
-		case WM_SIZE:
-			Resize(LOWORD(lParam), HIWORD(lParam));
-			break;
-
-		case WM_KEYDOWN:
-			switch (wParam)
+		case 'A':
+		case 'a':
+			if (bAnimate == false)
 			{
-				case VK_ESCAPE:
-					if (gbEscapeKeyIsPressed == false)
-					{
-						gbEscapeKeyIsPressed = true;
-					}
-					break;
-
-				case 0x46:
-				case 0x66:
-					if (gbFullScreen == false)
-					{
-						ToggleFullScreen();
-						gbFullScreen = true;
-					}
-					else
-					{
-						ToggleFullScreen();
-						gbFullScreen = false;
-					}
-					break;
-
-					case 'A':
-					case 'a':
-						if (bAnimate == true)
-						{
-							bAnimate = false;
-						}
-						else
-						{
-							bAnimate = true;
-						}
-						break;
-
-					case 'L':
-					case 'l':
-						if (bLight == true)
-						{
-							bLight = false;
-						}
-						else
-						{
-							bLight = true;
-						}
-						break;
-
-					default:
-						break;
+				bAnimate = true;
+			}
+			else
+			{
+				bAnimate = false;
 			}
 			break;
 
-		case WM_LBUTTONDOWN:
-			break;
-
-		case WM_CLOSE:
-			UnInitialize();
-			break;
-
-		case WM_DESTROY:
-			PostQuitMessage(0);
+		case 'L':
+		case 'l':
+			if (bLight == false)
+			{
+				bLight = true;
+			}
+			else
+			{
+				bLight = false;
+			}
 			break;
 
 		default:
 			break;
+		}
+		break;
+
+	
+	case WM_SETFOCUS:
+		gbActiveWindow = true;
+		break;
+
+	case WM_KILLFOCUS:
+		gbActiveWindow = false;
+		break;
+
+	case WM_CLOSE:
+		UnInitialize();
+		break;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		UnInitialize();
+		break;
+
+	default:
+		break;
 	}
 
 	return (DefWindowProc(hwnd, iMsg, wParam, lParam));
@@ -266,37 +264,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 void ToggleFullScreen()
 {
-	// function declaration
-
-	// local variable
 	MONITORINFO mi = { sizeof(MONITORINFO) };
 
-	// code
 	if (gbFullScreen == false)
 	{
 		dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
 
 		if (dwStyle & WS_OVERLAPPEDWINDOW)
 		{
-			if (GetWindowPlacement(ghwnd, &wpPrev) && (GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi)))
+			if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
 			{
 				SetWindowLong(ghwnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
-				SetWindowPos(ghwnd, HWND_TOP,
-					mi.rcMonitor.left, mi.rcMonitor.top,
-					mi.rcMonitor.right - mi.rcMonitor.left,
-					mi.rcMonitor.bottom - mi.rcMonitor.top,
-					SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(ghwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_FRAMECHANGED | SWP_NOZORDER);
 			}
 		}
-
 		ShowCursor(FALSE);
+		gbFullScreen = true;
 	}
 	else
 	{
-		SetWindowLong(ghwnd, GWL_STYLE, (dwStyle | WS_OVERLAPPEDWINDOW));
+		SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
 		SetWindowPlacement(ghwnd, &wpPrev);
-		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_NOZORDER);
+		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
 		ShowCursor(TRUE);
+		gbFullScreen = false;
 	}
 }
 
@@ -364,7 +355,10 @@ void Initialize(void)
 		ghdc = NULL;
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////
 	//vertex shader
+	/////////////////////////////////////////////////////////////////////////////////
+
 	// create shader
 	gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
@@ -386,19 +380,19 @@ void Initialize(void)
 		"uniform mat4 u_model_view_matrix;" \
 		"uniform mat4 u_projection_matrix;" \
 		"uniform int u_l_key_preesed;" \
-		"uniform vec3 u_ld_matrix;" \
-		"uniform vec3 u_kd_matrix;" \
+		"uniform vec3 u_ld;" \
+		"uniform vec3 u_kd;" \
 		"uniform vec4 u_light_position;" \
 		"out vec3 diffuse_light;" \
 		"void main(void)" \
 		"{"	\
 		"if(u_l_key_preesed == 1)" \
 		"{" \
-		"vec4 i_coordinates = u_model_view_matrix * vPosition;" \
+		"vec4 eye_coordinates = u_model_view_matrix * vPosition;" \
 		"mat3 normal_matrix = mat3(transpose(inverse(u_model_view_matrix)));" \
 		"vec3 t_norm = normalize(normal_matrix * vNormal);" \
-		"vec3 s = normalize(vec3(u_light_position - i_coordinates));" \
-		"diffuse_light = u_ld_matrix * u_kd_matrix * max(dot(s, t_norm), 0.0f);" \
+		"vec3 s = normalize(vec3(u_light_position - eye_coordinates));" \
+		"diffuse_light = u_ld * u_kd * max(dot(s, t_norm), 0.0f);" \
 		"}"																				\
 		"gl_Position = u_projection_matrix * u_model_view_matrix * vPosition;"          \
 		"}";
@@ -424,13 +418,15 @@ void Initialize(void)
 				glGetShaderInfoLog(gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
 				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				UnInitialize();
-				exit(0);
+				DestroyWindow(ghwnd);
 			}
 		}
 	}
 
-	// Fragment shader
+	/////////////////////////////////////////////////////////////////////////////////
+	//Fragment shader
+	/////////////////////////////////////////////////////////////////////////////////
+
 	// crete shader
 	gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -439,15 +435,15 @@ void Initialize(void)
 		"#version 450 core"										\
 		"\n"													\
 		"in vec3 diffuse_light;"								\
-		"uniform int u_l_key_preesed;"					\
+		"uniform int u_l_key_preesed;"							\
 		"out vec4 FragColor;"									\
 		"vec4 color;"											\
 		"void main(void)"										\
 		"\n"													\
 		"{"														\
-		"if(u_l_key_preesed == 1)"						\
+		"if(u_l_key_preesed == 1)"								\
 		"{"														\
-		"color = vec4(diffuse_light, 1.0f);"						\
+		"color = vec4(diffuse_light, 1.0f);"					\
 		"}"														\
 		"else"													\
 		"{"														\
@@ -475,13 +471,15 @@ void Initialize(void)
 				glGetShaderInfoLog(gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
 				fprintf(gpFile, "Fragment Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				UnInitialize();
-				exit(0);
+				DestroyWindow(ghwnd);
 			}
 		}
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////
 	// shader program
+	/////////////////////////////////////////////////////////////////////////////////
+
 	// create program
 	gShaderProgramObject = glCreateProgram();
 
@@ -504,7 +502,7 @@ void Initialize(void)
 	glGetProgramiv(gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
-		glGetShaderiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetProgramiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char*)malloc(iInfoLogLength);
@@ -514,63 +512,60 @@ void Initialize(void)
 				glGetShaderInfoLog(gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
 				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				UnInitialize();
-				exit(0);
+				DestroyWindow(ghwnd);
 			}
 		}
 	}
 
-	// get MVP Uniform location
-	//gMVPUniform				= glGetUniformLocation(gShaderProgramObject, "u_mvpMatrix");
 	modelViewMatrixUniform	= glGetUniformLocation(gShaderProgramObject, "u_model_view_matrix");
 	projectionMatrix		= glGetUniformLocation(gShaderProgramObject, "u_projection_matrix");
 	LKeyPressedUniform		= glGetUniformLocation(gShaderProgramObject, "u_l_key_preesed");
-	LdUniform				= glGetUniformLocation(gShaderProgramObject, "u_ld_uniform");
-	KdUniform				= glGetUniformLocation(gShaderProgramObject, "u_kd_uniform");
+	LdUniform				= glGetUniformLocation(gShaderProgramObject, "u_ld");
+	KdUniform				= glGetUniformLocation(gShaderProgramObject, "u_kd");
 	LightPositionUniform	= glGetUniformLocation(gShaderProgramObject, "u_light_position");
 
 	// vertices, colors. shader attribs, vbo, vao, initializations
-	const GLfloat cubeVertices[] = { 
-									// Front side
-									0.5f, 0.5f, 0.5f,
-									-0.5f, 0.5f, 0.5f,
-									-0.5f, -0.5f, 0.5f,
-									0.5f, -0.5f, 0.5f,
+	const GLfloat cubeVertices[] = {
+		 // Front side
+		 0.5f,  0.5f, 0.5f,
+		-0.5f,  0.5f, 0.5f,
+		-0.5f, -0.5f, 0.5f,
+		 0.5f, -0.5f, 0.5f,
 
-									// Top side
-									0.5f, 0.5f, -0.5f,
-									-0.5f, 0.5f, -0.5f,
-									-0.5f, 0.5f, 0.5f,
-									0.5f, 0.5f, 0.5f,
+		 // Top side
+		 0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f,  0.5f,
+		 0.5f, 0.5f,  0.5f,
 
-									// Back side
-									-0.5f, 0.5f, -0.5f,
-									0.5f, 0.5f, -0.5f,
-									0.5f, -0.5f, -0.5f,
-									-0.5f, -0.5f, -0.5f,
+		 // Back side
+		-0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
 
 
-									// Bottom side
-									0.5f, -0.5f, -0.5f,
-									-0.5f, -0.5f, -0.5f,
-									-0.5f, -0.5f, 0.5f,
-									0.5f, -0.5f, 0.5f,
+		 // Bottom side
+		 0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,
 
-									// Right side
-									0.5f, 0.5f, -0.5f,
-									0.5f, 0.5f, 0.5f,
-									0.5f, -0.5f, 0.5f,
-									0.5f, -0.5f, -0.5f,
+		 // Right side
+		0.5f,  0.5f, -0.5f,
+		0.5f,  0.5f,  0.5f,
+		0.5f, -0.5f,  0.5f,
+		0.5f, -0.5f, -0.5f,
 
-									// Left side
-									-0.5f, 0.5f, 0.5f,
-									-0.5f, 0.5f, -0.5f,
-									-0.5f, -0.5f, -0.5f,
-									-0.5f, -0.5f, 0.5f,
+		 // Left side
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,
 
 	};
 
-	const GLfloat cubeNormals[] = { 
+	const GLfloat cubeNormals[] = {
 		0.0f, 0.0f, 1.0f,		// Front side
 		0.0f, 0.0f, 1.0f,		// Front side
 		0.0f, 0.0f, 1.0f,		// Front side
@@ -627,10 +622,12 @@ void Initialize(void)
 
 	glBindVertexArray(0);
 
+	glShadeModel(GL_SMOOTH);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -644,6 +641,7 @@ void Initialize(void)
 
 void Display(void)
 {
+	static GLfloat cubeAngle = 0.0f;
 
 	// code
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -665,22 +663,17 @@ void Display(void)
 		glUniform1i(LKeyPressedUniform, 0);
 	}
 
-	mat4 TranslateMatrix	= vmath::translate(0.0f, 0.0f, -6.0f);
-	mat4 RotationMatrix		= vmath::rotate(cubeAngle, 0.0f, 1.0f, 0.0f);
+	mat4 modelViewMatrix = mat4::identity();
+	mat4 TranslateMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
 
-	//opengl drawing
-	// set modelview & modelviewprojection matrix to identity
-	mat4 modelViewProjectionMatrix = mat4::identity();
-	mat4 modelViewMatrix = TranslateMatrix * RotationMatrix;
-	
+	mat4 RotationMatrix1 = vmath::rotate((GLfloat)cubeAngle, 1.0f, 1.0f, 0.0f);
+	mat4 RotationMatrix2 = vmath::rotate((GLfloat)cubeAngle, 0.0f, 1.0f, 0.0f);
+	mat4 RotationMatrix3 = vmath::rotate((GLfloat)cubeAngle, 0.0f, 0.0f, 1.0f);
 
-	//modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix;
-
-	// multiply modelview and orthographic matrix to get modelviewprojection matrix
+	modelViewMatrix = TranslateMatrix * RotationMatrix1 * RotationMatrix2 * RotationMatrix3;
 
 	glUniformMatrix4fv(modelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
 	glUniformMatrix4fv(projectionMatrix, 1, GL_FALSE, gPerspectiveProjectionMatrix);
-	
 
 	// bind vao
 	glBindVertexArray(gVao_Cube);
@@ -698,14 +691,13 @@ void Display(void)
 	// stop using opengl program object
 	glUseProgram(0);
 
-	
-	
-
 	if (bAnimate == true)
 	{
-		cubeAngle += 0.1f;
+		cubeAngle = cubeAngle + 0.1f;
 		if (cubeAngle >= 360.0f)
+		{
 			cubeAngle = 0.0f;
+		}
 	}
 
 	// OpenGL Drawing
@@ -732,13 +724,72 @@ void UnInitialize()
 		ShowCursor(TRUE);
 	}
 
-	wglMakeCurrent(NULL, NULL);
+	if (gVao_Cube)
+	{
+		glDeleteVertexArrays(1, &gVao_Cube);
+		gVao_Cube = 0;
+	}
 
-	wglDeleteContext(ghrc);
-	ghrc = NULL;
+	if (gVbo_Position_Cube)
+	{
+		glDeleteBuffers(1, &gVbo_Position_Cube);
+		gVbo_Position_Cube = 0;
+	}
 
-	ReleaseDC(ghwnd, ghdc);
-	ghdc = NULL;
+	if (gVbo_Cube_Normal)
+	{
+		glDeleteBuffers(1, &gVbo_Cube_Normal);
+		gVbo_Cube_Normal = 0;
+	}
+
+	if (gShaderProgramObject)
+	{
+		glUseProgram(gShaderProgramObject);
+		GLsizei shaderCount;
+
+		glGetProgramiv(gShaderProgramObject, GL_ATTACHED_SHADERS, &shaderCount);
+
+		GLuint* pShaders = NULL;
+		pShaders = (GLuint*)malloc(shaderCount * sizeof(GLuint));
+		if (pShaders == NULL)
+		{
+			fprintf(gpFile, "Malloc Failed!!!\n\n");
+			exit(0);
+		}
+
+		glGetAttachedShaders(gShaderProgramObject, shaderCount, &shaderCount, pShaders);
+
+		for (GLsizei i = 0; i < shaderCount; i++)
+		{
+			
+			glDetachShader(gShaderProgramObject, pShaders[i]);
+			glDeleteShader(pShaders[i]);
+			pShaders[i] = 0;
+			free(pShaders);
+
+			glDeleteProgram(gShaderProgramObject);
+			gShaderProgramObject = 0;
+			glUseProgram(0);
+		}
+
+	}
+
+	if (wglGetCurrentContext() == ghrc)
+	{
+		wglMakeCurrent(NULL, NULL);
+	}
+
+	if (ghrc)
+	{
+		wglDeleteContext(ghrc);
+		ghrc = NULL;
+	}
+
+	if (ghdc)
+	{
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
 
 	if (gpFile)
 	{
