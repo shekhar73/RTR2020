@@ -20,10 +20,10 @@ using namespace vmath;
 
 enum
 {
-    BDJ_ATTRIBUTE_POSITION = 0,
-    BDJ_ATTRIBUTE_COLOR,
-    BDJ_ATTRIBUTE_NORMAL,
-    BDJ_ATTRIBUTE_TEXTURE0
+   SSK_ATTRIBUTE_POSITION = 0,
+    SSK_ATTRIBUTE_COLOR,
+    SSK_ATTRIBUTE_NORMAL,
+    SSK_ATTRIBUTE_TEXTURE0
 };
 
 FILE* gpFile = NULL;
@@ -365,8 +365,8 @@ void Initialize()
     glAttachShader(gShaderProgramObject, gVertexShaderObject);
     glAttachShader(gShaderProgramObject, gFragmentShaderObject);
 
-    glBindAttribLocation(gShaderProgramObject, BDJ_ATTRIBUTE_POSITION, "vPosition");
-    glBindAttribLocation(gShaderProgramObject, BDJ_ATTRIBUTE_COLOR, "vColor");
+    glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_POSITION, "vPosition");
+    glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_COLOR, "vColor");
 
     //Link
     glLinkProgram(gShaderProgramObject);
@@ -405,9 +405,9 @@ void Initialize()
     glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
     glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(BDJ_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(SSK_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    glEnableVertexAttribArray(BDJ_ATTRIBUTE_POSITION);
+    glEnableVertexAttribArray(SSK_ATTRIBUTE_POSITION);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -416,9 +416,9 @@ void Initialize()
     glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
     glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(BDJ_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(SSK_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    glEnableVertexAttribArray(BDJ_ATTRIBUTE_NORMAL);
+    glEnableVertexAttribArray(SSK_ATTRIBUTE_NORMAL);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
