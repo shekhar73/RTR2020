@@ -1,0 +1,3 @@
+#include "TweakedSmiley.h"
+SMILEY_BITMAP BITMAP Smily.bmp
+

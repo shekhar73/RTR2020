@@ -480,7 +480,7 @@ void Initialize(void)
 
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
-		glGetShaderiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetProgramiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char*)malloc(iInfoLogLength);

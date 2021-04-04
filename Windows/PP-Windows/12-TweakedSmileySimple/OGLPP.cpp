@@ -1,10 +1,9 @@
 #include <windows.h>
 #include <stdio.h>
-
+#include "TweakedSmiley.h"
 #include <gl/glew.h>
 #include <gl/GL.h>
-
-#include "vmath.h"	// It is a C++ file
+#include "vmath.h"
 
 #pragma comment(lib, "glew32.lib")
 #pragma comment(lib, "opengl32.lib")
@@ -21,7 +20,7 @@ enum
 	SSK_ATTRIBUTE_POSITION	= 0,
 	SSK_ATTRIBUTE_COLOR,
 	SSK_ATTRIBUTE_NORMAL,
-	SSK_ATTRIBUTE_TEXCORD
+	SSK_ATTRIBUTE_TEXTURE
 };
 
 // Prototype of WndProc() delclared Globally
@@ -32,7 +31,7 @@ FILE *gpFile			=	NULL;
 HWND ghwnd				= 	NULL;
 HDC ghdc				=	NULL;
 HGLRC ghrc				= 	NULL;
-FILE* gpVendorInfoFile	= NULL;
+FILE* gpVendorInfoFile	=	NULL;
 
 DWORD dwStyle;
 WINDOWPLACEMENT wpPrev	= { sizeof(WINDOWPLACEMENT) };
@@ -45,14 +44,21 @@ GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
 
-GLuint gVao;
-GLuint gVbo_position;
+// Square
+GLuint gVao_Square;
+GLuint gVbo_Position_Square;
+GLuint gVbo_Texture_Square;
+
 GLuint gMVPUniform;
 
 // It is a matrix of 4 X 4 which is declared in vmath.h header file.
 // It will be used for transformation
 //mat4 gPerspectiveProjectionMatrix; // vmath::mat4 gPerspectiveProjectionMatrix
 mat4 gPerspectiveProjectionMatrix;
+
+GLuint smileyTexture;
+GLuint gTextureSamplerUniform;
+GLuint keyPressed;
 
 // Entry Point function i.e. main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -182,29 +188,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case VK_ESCAPE:
-			if (gbEscapeKeyIsPressed == false)
-			{
-				gbEscapeKeyIsPressed = true;
-			}
-			break;
+			case VK_ESCAPE:
+				if (gbEscapeKeyIsPressed == false)
+				{
+					gbEscapeKeyIsPressed = true;
+				}
+				break;
 
-		case 0x46:
-		case 0x66:
-			if (gbFullScreen == false)
-			{
-				ToggleFullScreen();
-				gbFullScreen = true;
-			}
-			else
-			{
-				ToggleFullScreen();
-				gbFullScreen = false;
-			}
-			break;
+			case 0x46:
+			case 0x66:
+				if (gbFullScreen == false)
+				{
+					ToggleFullScreen();
+					gbFullScreen = true;
+				}
+				else
+				{
+					ToggleFullScreen();
+					gbFullScreen = false;
+				}
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 		break;
 
@@ -267,6 +273,7 @@ void Initialize(void)
 	// Function prototypes
 	void Resize(int, int);
 	void UnInitialize();
+	bool LoadGLTexture(GLuint*, TCHAR[]);
 	
 	// Variable declarations
 	PIXELFORMATDESCRIPTOR pfd;
@@ -343,14 +350,17 @@ void Initialize(void)
 
 	// Provide source code to shader
 	const GLchar *vertexShaderSourceCode = 
-		"#version 450 core" \
-		"\n" \
-		"in vec4 vPosition;" \
-		"uniform mat4 u_mvpMatrix;" \
-		"void main(void)" \
-		"\n" \
-		"{" \
-		"gl_Position = u_mvpMatrix * vPosition;" \
+		"#version 450 core" 						\
+		"\n" 										\
+		"in vec4 vPosition;" 						\
+		"in vec2 vTexture;"							\
+		"uniform mat4 u_mvpMatrix;" 				\
+		"out vec2 out_texture;"						\
+		"void main(void)"							\
+		"\n" 										\
+		"{" 										\
+		"gl_Position = u_mvpMatrix * vPosition;" 	\
+		"out_texture = vTexture;"					\
 		"}";
 
 	//gl_Position is inbuilt variable in shader
@@ -366,7 +376,7 @@ void Initialize(void)
 
 	// shader compilation error checking
 
-	// void glGetShaderiv(GLuint shader, GLenum pname, GLint* params);
+	//void glGetShaderiv(GLuint shader, GLenum pname, GLint* params);
 	// glGetShaderiv — return a parameter from a shader object
 
 	glGetShaderiv(gVertexShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
@@ -401,13 +411,15 @@ void Initialize(void)
 
 	// provide source code to shader
 	const GLchar *fragmentShaderSourceCode = 
-		"#version 450 core" \
-		"\n" \
-		"out vec4 FragColor;" \
-		"void main(void)" \
-		"\n" \
-		"{" \
-		"FragColor = vec4(1.0, 1.0, 1.0, 1.0);" \
+		"#version 450 core" 									\
+		"\n" 													\
+		"in vec2 out_texture;"									\
+		"uniform sampler2D u_texture_sampler;"					\
+		"out vec4 FragColor;"						 			\
+		"void main(void)" 										\
+		"\n" 													\
+		"{" 													\
+		"FragColor = texture(u_texture_sampler, out_texture);" 	\
 		"}";
 
 	glShaderSource(gFragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
@@ -416,8 +428,6 @@ void Initialize(void)
 	glCompileShader(gFragmentShaderObject);
 
 	// fragment shader compilation error checking
-
-	
 	glGetShaderiv(gFragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
 	if (iShaderCompiledStatus == GL_FALSE)
 	{
@@ -450,7 +460,9 @@ void Initialize(void)
 	// attach fragment shader to shader program
 	glAttachShader(gShaderProgramObject, gFragmentShaderObject);
 
-	// pre-link binding of shader program object with vertex shader position attribute in your enum to catch the 'in' and 'uniform' attributes
+	glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_TEXTURE, "vTexture");
+
+	// pre-link binding of shader program object with vertex shader position attribute in your enum to catch the in and unifrom attributes
 	glBindAttribLocation(gShaderProgramObject, SSK_ATTRIBUTE_POSITION, "vPosition");
 
 	// link shader
@@ -464,10 +476,9 @@ void Initialize(void)
 
 	// shader link error checking
 	glGetProgramiv(gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
-
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
-		glGetProgramiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetShaderiv(gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char*)malloc(iInfoLogLength);
@@ -487,29 +498,40 @@ void Initialize(void)
 	// get MVP uniform location
 	// post linking
 	gMVPUniform = glGetUniformLocation(gShaderProgramObject, "u_mvpMatrix");
+	gTextureSamplerUniform = glGetUniformLocation(gShaderProgramObject, "u_texture_sampler");
 
 	// *** vertices, colors, shader attribs, vbo, vao initializations ***
-	const GLfloat triangleVertices[] = {
-											0.0f,   1.0f,  0.0f,	   // apex
-											-1.0f, -1.0f, 0.0f,      // left-bottom
-											1.0f,  -1.0f, 0.0f	   // right-bottom
-									    };
+	const GLfloat cubeVertices[] = {
+										 1.0f,  1.0f, 0.0f,
+										-1.0f,  1.0f, 0.0f,
+										-1.0f, -1.0f, 0.0f,
+										 1.0f, -1.0f, 0.0f,				
+	};
+
+	const GLfloat cubeTextures[] = {
+										1.0f, 1.0f,
+										0.0f, 1.0f,
+										0.0f, 0.0f,
+										1.0f, 0.0f,
+	};
+
+
 
 	// It will store all the below 6 steps so that we can reuse it in draw function
-	glGenVertexArrays(1, &gVao);
-	glBindVertexArray(gVao);
+	glGenVertexArrays(1, &gVao_Square);
+	glBindVertexArray(gVao_Square);
 
 	//OpenGL generates the buffer - OpenGL gives you the buffer symbol to you for bind
 	// glGenBuffers(how many buffers create, named buffer object(symbol));
-	glGenBuffers(1, &gVbo_position);	//like glGenTextures() in FFP
+	glGenBuffers(1, &gVbo_Position_Square);	//like glGenTextures() in FFP
 
 	// map the buffer symbol(in OpenGL) with my attribute
 	// glBindBuffer(
 	//               which type of buffer(like position, color, texcord, normal) => GL_ARRAY_BUFFER,
 	//				 in which symbol I'll add this BUFFER_ARRAY
 	//             );
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_position);	// like glBindTexture() in FFP
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Position_Square);	// like glBindTexture() in FFP
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
 	// tell how to use the data which is added in GL_ARRAY_BUFFER
 	// glVertexAttribPointer(where I have to add in shader,
@@ -517,26 +539,35 @@ void Initialize(void)
 	//							type of data which is sent,
 	//							can I make it NORMALIZE or not(fit it in -1 to 1(normalize),
 	//							kitine dhanga taku data ghyayla,	
-	//							kitine udya maru(udaych maraych nahi so NULL)
+	//							kitine udya maru(udaych maraych nahi so NULL
 	//						);
 
 	glVertexAttribPointer(SSK_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(SSK_ATTRIBUTE_POSITION);
-
 	// Unbind the BUFFER
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+	glGenBuffers(1, &gVbo_Texture_Square);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Texture_Square);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeTextures), cubeTextures, GL_STATIC_DRAW);
+	glVertexAttribPointer(SSK_ATTRIBUTE_TEXTURE, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(SSK_ATTRIBUTE_TEXTURE);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 
 	glShadeModel(GL_SMOOTH);
+
+	LoadGLTexture(&smileyTexture, MAKEINTRESOURCE(SMILEY_BITMAP));
+	glEnable(GL_TEXTURE_2D);
+
 	// set-up detpth buffer
 	glClearDepth(1.0f);
 	// enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	// depth test to do
 	glDepthFunc(GL_LEQUAL);
-	// set really nice perspective calculations?
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	// we will always cull back faces for better performance
 	glEnable(GL_CULL_FACE);
@@ -552,8 +583,40 @@ void Initialize(void)
 	Resize(WIN_WIDTH, WIN_HEIGHT);
 }
 
+bool LoadGLTexture(GLuint* texture, TCHAR resourceID[])
+{
+	//local variable
+	bool bResult = false;
+	HBITMAP hBitmap = NULL;
+	BITMAP bmp;
+
+	// code
+	hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), resourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+
+	if (hBitmap)
+	{
+		bResult = true;
+
+		GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glGenTextures(1, texture);
+		glBindTexture(GL_TEXTURE_2D, *texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		// push data into graphic memory with the help of graphics driver
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp.bmWidth, bmp.bmHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, bmp.bmBits);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		DeleteObject(hBitmap);
+	}
+	return bResult;
+}
+
 void Display(void)
 {
+	static GLfloat texCord[8];
+
 	mat4 TranslateMatrix = vmath::translate(0.0f, 0.0f, -3.0f);
 	// code
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -567,7 +630,7 @@ void Display(void)
 	mat4 modelViewProjectionMatrix = mat4::identity(); //in resize of FFP glMatrixMode(GL_PROJECTION); glLoadIdentity();
 
 	// multiply the modelview and perspective matrix to get modelviewprojection matrix
-	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix;	// ORDER IS IMPORTANT because Matrix mulitplication is not commutative i.e. (a * b) != (b * a)
+	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix;	// ORDER IS IMPORTANT
 
 	// pass above modelviewprojection matrix to the vertex shader in 'u_mvpMatrix' shader variable
 	// whose position value we already calculated in initWithFrame() by using glGetUniformLocation()
@@ -580,16 +643,20 @@ void Display(void)
 	//  v -> array (vector)
 	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, smileyTexture);
+	glUniform1i(gTextureSamplerUniform, 0);
 
 	// *** bind vao ***
 	// all the rendering data is recoreded in initialize() by using glGenVertexArrays(1, &gVao);
-	glBindVertexArray(gVao);
+	glBindVertexArray(gVao_Square);
 
 	// *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
-	glDrawArrays(GL_TRIANGLES, 0, 3); // 3 (each with its x, y, z) vertices in triangleVertices array
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // 3 (each with its x, y, z) vertices in triangleVertices array
 
 	// *** unbind vao ***
 	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Stop using OpenGL program object
 	glUseProgram(0);
@@ -622,17 +689,17 @@ void UnInitialize()
 	}
 
 	// destory vao
-	if (gVao)
+	if (gVao_Square)
 	{
-		glDeleteVertexArrays(1, &gVao);
-		gVao = 0;
+		glDeleteVertexArrays(1, &gVao_Square);
+		gVao_Square = 0;
 	}
 
 	// destroy vbo
-	if (gVbo_position)
+	if (gVbo_Position_Square)
 	{
-		glDeleteVertexArrays(1, &gVbo_position);
-		gVbo_position = 0;
+		glDeleteVertexArrays(1, &gVbo_Position_Square);
+		gVbo_Position_Square = 0;
 	}
 
 
