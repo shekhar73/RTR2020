@@ -238,7 +238,8 @@ void Initialize(void)
 
 	if (wglMakeCurrent(ghdc, ghrc) == FALSE)
 	{
-		fprintf(logFile, "wglMakeCurrent() failed\n");
+		fprintf(logFile, "wglMa
+			keCurrent() failed\n");
 		DestroyWindow(ghwnd);
 	}
 

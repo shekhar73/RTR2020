@@ -398,21 +398,32 @@ void Initialize(void)
 void Resize(int width, int height)
 {
 	//code
-	if (0 == height)
-	{
+	if (height == 0)
 		height = 1;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	if (width <= height) 
+	{
+		glOrtho(0.0f, //Left
+			15.5f * ((GLfloat)(height) / (GLfloat)(width)),  // Right
+			0.0f, // Bottom
+			15.5f * ((GLfloat)(height) / (GLfloat)(width)), // Top
+			-10.0f, // Near
+			10.0f); // Far
+	}
+	else
+	{
+		glOrtho(-15.5f, //Left
+			15.5f,  // Right
+			-15.5f * ((GLfloat)(height) / (GLfloat)(width)), // Bottom
+			15.5f * ((GLfloat)(height) / (GLfloat)(width)), // Top
+			-100.0f, // Near
+			100.0f); // Far
 	}
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f,
-		(GLfloat)width / (GLfloat)height,
-		0.1f,
-		100.0f
-	);
-
-	//glOrtho(0.0f, 15.5f, 0.0f, 15.5f * (GLfloat)height / (GLfloat)width, -10.0f, 10.0f);
 }
 
 void Display(void)
