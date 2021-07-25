@@ -1,2 +1,0 @@
-Program executed successfully on : 21/4/2021 at TIME:18:25:16
-Log file closed successfully and program is completed successfully
