@@ -1,0 +1,3 @@
+Log file created successfully
+Attach shader Successful.
+Log File closed successfully

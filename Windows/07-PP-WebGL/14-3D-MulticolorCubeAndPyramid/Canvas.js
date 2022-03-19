@@ -98,6 +98,8 @@ function toggleFullscreen()
 
 	if(fullscreen_element == null)
 	{
+		
+
 		if(canvas.requestFullscreen)
 		{
 			canvas.requestFullscreen();
@@ -150,6 +152,8 @@ function keyDown(event)
 			break;
 
 		case 70: 	// F
+			var myAudio = document.getElementById('myAudio');
+			myAudio.play();
 			toggleFullscreen();
 			break;
 	}
@@ -251,6 +255,28 @@ function init()
 	}
 
 	mvpUniform = gl.getUniformLocation(shaderProgramObject,"u_mvp_matrix");
+
+
+
+
+	/*var myAudio = document.createElement("audio");
+	myAudio.src = "KadamKadamBadhayeJa.mp3";
+	myAudio.play();*/
+	//myAudio.pause();
+/*
+	const audio = new Audio("song.wav");
+	audio.play();
+*/
+
+/*const audioCtx = new AudioContext();
+const audio = new Audio("song.wav");
+
+const source = audioCtx.createMediaElementSource(audio);
+source.connect(audioCtx.destination);
+
+audio.play();*/
+
+
 
 	var pyramidVertices = new Float32Array([
 												

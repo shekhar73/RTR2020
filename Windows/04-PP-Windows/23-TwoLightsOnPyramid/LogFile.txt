@@ -1,0 +1,3 @@
+Log File Is Successfully Opened.
+Pressed blight == false.
+Log File Is Successfully Closed.

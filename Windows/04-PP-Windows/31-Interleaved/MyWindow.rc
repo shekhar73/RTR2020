@@ -1,0 +1,2 @@
+#include "MyWindow.h"
+MARBLE_BITMAP BITMAP marble.bmp

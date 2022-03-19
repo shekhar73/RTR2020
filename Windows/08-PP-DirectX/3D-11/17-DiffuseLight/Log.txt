@@ -1,0 +1,353 @@
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() FAILED For Vertex Shader. E:\01_Class Assignments and books\01-Assignments\02-PP_Windows\05-DirectX\All Assignments\17-DiffuseLight\VS(1,475-535): warning X3206: implicit truncation of vector type
+E:\01_Class Assignments and books\01-Assignments\02-PP_Windows\05-DirectX\All Assignments\17-DiffuseLight\VS(1,701-716): error X3004: undeclared identifier 'projectionMatrix'
+.
+Initialize() FAILED. Exitting now...
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.
+D3D11CreateDeviceAndSwapChain() Succeded.
+The Chosen Driver Is Of Hardware Type.
+The Supported Highest Feature Level Is 11.0
+D3DCompile() Succeded For Vertex Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+D3DCompile() Succeded For Pixel Shader.
+ID3D11Device:: CreatePixelShader() Succeded.
+ID3D11Device:: CreateInputLayout() Succeded.
+ID3D11Device:: CreateBuffer() Succeded for Vertex Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Normal Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Index Buffer.
+ID3D11Device:: CreateBuffer() Succeded for Constant Buffer.
+ID3D11Device:: CreateBuffer() Succeded for CreateRasterizerState.
+CreateTexture2D() Succeded.
+CreateDepthStencilView() Succeded.
+CreateRenderTargetView() Succeded.
+resize() Succeded.
+Initialize() Succeded.
+UnInitialize() Succeded.
+Log File Is Successfully Closed.

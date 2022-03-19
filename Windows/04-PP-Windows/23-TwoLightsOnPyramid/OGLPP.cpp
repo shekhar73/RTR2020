@@ -12,12 +12,12 @@
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
-
-using namespace vmath;
+vmath;
 
 enum
 {
-    SSK_ATTRIBUTE_POSITION = 0,
+    SSK_ATTRIBUT
+using namespace E_POSITION = 0,
     SSK_ATTRIBUTE_COLOR,
     SSK_ATTRIBUTE_NORMAL,
     SSK_ATTRIBUTE_TEXCORD,
