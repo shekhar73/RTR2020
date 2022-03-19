@@ -53,40 +53,40 @@ unsigned short sphere_elements[2280];
 int gNumSphereVertices;
 int gNumSphereElements;
 
-GLuint vao;  
-GLuint vbo_position;
-GLuint vbo_normal;
-GLuint vbo_element;
+unsigned int vao;  
+unsigned int vbo_position;
+unsigned int vbo_normal;
+unsigned int vbo_element;
 
 // Per Vertex Light Model
-GLuint gShaderProgramObjectPF;
-GLuint gVertexShaderObjectPF;
-GLuint gFragmentShaderObjectPF;
+int gShaderProgramObjectPF;
+int gVertexShaderObjectPF;
+int gFragmentShaderObjectPF;
 
-GLuint modelMatrixUniformPF;
-GLuint perspectiveProjectionUniformPF;
-GLuint viewMatrixUniformPF;
+unsigned int modelMatrixUniformPF;
+unsigned int perspectiveProjectionUniformPF;
+unsigned int viewMatrixUniformPF;
 
-GLfloat lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
-GLfloat lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
-GLfloat lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
-GLfloat lightPosition[] = { 0.0f,0.0f,0.0f,0.0f };
+float lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
+float lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
+float lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
+float lightPosition[] = { 0.0f,0.0f,0.0f,0.0f };
 
-GLuint LightaUniformPF;
-GLuint LightsUniformPF;
-GLuint LightdUniformPF;
-GLuint LightpUniformPF; 
+unsigned int LightaUniformPF;
+unsigned int LightsUniformPF;
+unsigned int LightdUniformPF;
+unsigned int LightpUniformPF; 
 
-GLuint KaUniformPF;
-GLuint KdUniformPF;
-GLuint KsUniformPF;
-GLfloat MaterialShineUniformPF; 
+unsigned int KaUniformPF;
+unsigned int KdUniformPF;
+unsigned int KsUniformPF;
+float MaterialShineUniformPF; 
 
-GLuint lKeyPressedUniformPF;
+unsigned int lKeyPressedUniformPF;
 
-GLfloat lightAngle0 = 0.0f;
-GLfloat lightAngle1 = 0.0f;
-GLfloat lightAngle2 = 0.0f;
+float lightAngle0 = 0.0f;
+float lightAngle1 = 0.0f;
+float lightAngle2 = 0.0f;
 
 bool bAnimate = false;
 bool bLight = false;
@@ -95,7 +95,7 @@ mat4 perspectiveProjectionMatrix;
 
 FILE* gpFile = NULL;
 
-GLfloat lightRotateAngle = 0.0f;
+float lightRotateAngle = 0.0f;
 
 int winWidth;
 int winHeight;
@@ -698,7 +698,7 @@ void Resize(int width, int height)
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-	perspectiveProjectionMatrix = perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	perspectiveProjectionMatrix = perspective(45.0f, (float)width / (float)height, 0.1f, 100.0f);
 }
 
 void Draw(void)
@@ -712,10 +712,10 @@ void Draw(void)
 	mat4 viewMatrix = mat4::identity();
 
     // Object Material
-	GLfloat materialAmbient[4];
-	GLfloat materialDiffuse[4];
-	GLfloat materialSpecular[4];
-	GLfloat materialShine;
+	float materialAmbient[4];
+	float materialDiffuse[4];
+	float materialSpecular[4];
+	float materialShine;
     
     
     

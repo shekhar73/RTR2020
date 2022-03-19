@@ -40,22 +40,17 @@ int gVertexShaderObject;
 int gFragmentShaderObject;
 int gShaderProgramObject;
 
-unsigned int gVao_Triangle;
-unsigned int gVbo_Triangle_Position;
-unsigned int gVbo_Triangle_Color;
-
-unsigned int gVao_Square;
-unsigned int gVbo_Square_Position;
-unsigned int gVbo_Square_Color;
+unsigned int gVao_Pyramid;
+unsigned int gVbo_Position_Pyramid;
+unsigned int gVbo_Color_Pyramid;
 
 unsigned int gMVPUniform;
+
+float pyramidAngle = 0.0f;
 
 mat4 perspectiveProjectionMatrix;
 
 FILE* gpFile = NULL;
-
-float triangleAngle = 0.0f;
-float squareAngle = 0.0f;
 
 
 int main()
@@ -157,14 +152,11 @@ void CreateWindow(void)
 	XSetWindowAttributes winAttribs;
 	int defaultScreen;
 	int styleMask;
-	static int frameBufferAttributes[] = {GLX_DOUBLEBUFFER,
-											True,
-											GLX_RGBA, 
-											GLX_RED_SIZE, 8,
-											GLX_GREEN_SIZE, 8,
-											GLX_BLUE_SIZE, 8,
-											GLX_ALPHA_SIZE, 8,
-											GLX_DEPTH_SIZE, 24,
+	static int frameBufferAttributes[] = {GLX_RGBA, 
+											GLX_RED_SIZE, 1,
+											GLX_GREEN_SIZE, 1,
+											GLX_BLUE_SIZE, 1,
+											GLX_ALPHA_SIZE, 1,
 											0}; 
 
 	
@@ -274,11 +266,11 @@ void Initialize(void)
 		"\n" \
 		"in vec4 vPosition;" \
 		"in vec4 vColor;" \
-		"uniform mat4 u_mvp_matrix;" \
+		"uniform mat4 u_mvpMatrix;" \
 		"out vec4 out_color;" \
 		"void main(void)" \
 		"{" \
-		"gl_Position = u_mvp_matrix * vPosition;" \
+		"gl_Position = u_mvpMatrix * vPosition;" \
 		"out_color = vColor;" \
 		"}";
 
@@ -315,13 +307,14 @@ void Initialize(void)
 
 	// provide sourcecode to shader
 	const GLchar* fragmentShaderSourceCode =
-		"#version 450 core" \
-		"\n" \
-		"in vec4 out_color;" \
-		"out vec4 FragColor;" \
-		"void main(void)" \
-		"{" \
-		"FragColor = out_color;" \
+		"#version 450 core"	\
+		"\n"	\
+		"in vec4 out_color;"	\
+		"out vec4 FragColor;"	\
+		"void main(void)"	\
+		"\n"	\
+		"{"		\
+		"FragColor = out_color;"
 		"}";
 
 	glShaderSource(gFragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
@@ -385,141 +378,93 @@ void Initialize(void)
 	}
 
 	// get MVP uniform location
-	gMVPUniform = glGetUniformLocation(gShaderProgramObject, "u_mvp_matrix");
+	gMVPUniform = glGetUniformLocation(gShaderProgramObject, "u_mvpMatrix");
 
 	// vertices, colors, shader attribs, vbo, vao, initializations
-	const GLfloat triangleVertices[] = { 
-										0.0f, 0.5f, 0.0f,
-											-0.5f, -0.5f, 0.5f,
-											0.5f, -0.5f, 0.5f,
+	const GLfloat pyramidVertices[] = {
 
-											0.0f, 0.5f, 0.0f,
-											-0.5f, -0.5f, -0.5f,
-											-0.5f, -0.5f, 0.5f,
+									// front side
+									0.0f, 0.5f, 0.0f,
+									-0.5f, -0.5f, 0.5f,
+									0.5f, -0.5f, 0.5f,
 
-											0.0f, 0.5f, 0.0f,
-											0.5f, -0.5f, -0.5f,
-											-0.5f, -0.5f, -0.5f,
+									// left side
+									0.0f, 0.5f, 0.0f,
+									-0.5f, -0.5f, -0.5f,
+									-0.5f, -0.5f, 0.5f,
 
-											0.0f, 0.5f, 0.0f,
-											0.5f, -0.5f, 0.5f,
-											0.5f, -0.5f, -0.5f 
-										};
+									// back side
+									0.0f, 0.5f, 0.0f,
+									0.5f, -0.5f, -0.5f,
+									-0.5f, -0.5f, -0.5f,
 
-	const GLfloat colorTriangle[] = {
-									0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
+									// right side
+									0.0f, 0.5f, 0.0f,
+									0.5f, -0.5f, 0.5f,
+									0.5f, -0.5f, -0.5f
+	};
 
-										1.0f, 0.0f, 1.0f,
-										1.0f, 0.0f, 1.0f,
-										1.0f, 0.0f, 1.0f,
+	const GLfloat colorCube[] = { 1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										0.0f, 1.0f, 1.0f,
-										0.0f, 1.0f, 1.0f,
-										0.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										0.0f, 0.5f, 1.0f,
-										0.0f, 0.5f, 1.0f,
-										0.0f, 0.5f, 1.0f
-									};
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-	const GLfloat squareVertices[] = {	
-										0.5f, 0.5f, 0.5f,
-										-0.5f, 0.5f, 0.5f,
-										-0.5f, -0.5f, 0.5f,
-										0.5f, -0.5f, 0.5f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										-0.5f, 0.5f, -0.5f,
-										0.5f, 0.5f, -0.5f,
-										0.5f, -0.5f, -0.5f,
-										-0.5f, -0.5f, -0.5f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										0.5f, 0.5f, -0.5f,
-										0.5f, 0.5f, 0.5f,
-										0.5f, -0.5f, 0.5f,
-										0.5f, -0.5f, -0.5f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f 
+	};
 
-										-0.5f, 0.5f, 0.5f,
-										-0.5f, 0.5f, -0.5f,
-										-0.5f, -0.5f, -0.5f,
-										-0.5f, -0.5f, 0.5f,
+	const GLfloat colorPyramid[] = { 1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										0.5f, 0.5f, -0.5f,
-										-0.5f, 0.5f, -0.5f,
-										-0.5f, 0.5f, 0.5f,
-										0.5f, 0.5f, 0.5f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-										-0.5f, -0.5f, -0.5f,
-										0.5f, -0.5f, -0.5f,
-										0.5f, -0.5f, 0.5f,
-										-0.5f, -0.5f, 0.5f
-									};
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
 
-	const GLfloat colorSqaure[] = { 
-									0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 1.0f,
-										
-										1.0f, 0.0f, 0.0f,
-										1.0f, 0.0f, 0.0f,
-										1.0f, 0.0f, 0.0f,
-										1.0f, 0.0f, 0.0f,
-										
-										1.0f, 0.0f, 0.0f,
-										1.0f, 0.0f, 0.0f,
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-										
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-		
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f,
-										1.0f, 1.0f, 1.0f 
-									};
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+									1.0f, 1.0f, 1.0f,
+	};
 
-	glGenVertexArrays(1, &gVao_Triangle);
-	glBindVertexArray(gVao_Triangle);
+	glGenVertexArrays(1, &gVao_Pyramid);
+	glBindVertexArray(gVao_Pyramid);
 
-	glGenBuffers(1, &gVbo_Triangle_Position);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Triangle_Position);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(SSK_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(SSK_ATTRIBUTE_VERTEX);
+	glGenBuffers(1, &gVbo_Position_Pyramid);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Position_Pyramid);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidVertices), pyramidVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(SSK_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(SSK_ATTRIBUTE_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glGenBuffers(1, &gVbo_Triangle_Color);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Triangle_Color);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colorTriangle), colorTriangle, GL_STATIC_DRAW);
-	glVertexAttribPointer(SSK_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(SSK_ATTRIBUTE_COLOR);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-
-	glGenVertexArrays(1, &gVao_Square);
-	glBindVertexArray(gVao_Square);
-
-	glGenBuffers(1, &gVbo_Square_Position);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Square_Position);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertices), squareVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(SSK_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(SSK_ATTRIBUTE_VERTEX);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glGenBuffers(1, &gVbo_Square_Color);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Square_Color);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colorSqaure), colorSqaure, GL_STATIC_DRAW);
+	glGenBuffers(1, &gVbo_Color_Pyramid);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Color_Pyramid);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colorPyramid), colorPyramid, GL_STATIC_DRAW);
 	glVertexAttribPointer(SSK_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(SSK_ATTRIBUTE_COLOR);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -533,7 +478,8 @@ void Initialize(void)
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_CULL_FACE);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
 
 	perspectiveProjectionMatrix = mat4::identity();
 
@@ -552,62 +498,30 @@ void Resize(int width, int height)
 
 void Draw(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	// start using opengl program object
 	glUseProgram(gShaderProgramObject);
 
 	// opengl drawing
 	// set modelview & modelviewprojection matrix to identity
-	mat4 modelViewMatrix = mat4::identity();
+	mat4 TranslateMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
+	mat4 RotationMatrix = vmath::rotate(pyramidAngle, 0.0f, 1.0f, 0.0f);
+	mat4 modelViewMatrix = TranslateMatrix * RotationMatrix;
 	mat4 modelViewProjectionMatrix = mat4::identity();
-	mat4 TranslateMatrix = mat4::identity();
-	mat4 RotationMatrix = mat4::identity();
 
-	TranslateMatrix = translate(1.5f, 0.0f, -6.0f);
-	RotationMatrix = rotate(triangleAngle, 0.0f, 1.0f, 0.0f);
-	modelViewMatrix = TranslateMatrix * RotationMatrix;
+	// multiply modelview and perspective matrix to get modelviewprojection matrix
+	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix; // order is important
 
-	// multiply modelview and orthographic matrix to get modelviewprojection matrix
-	modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;	// order is important
-
-	// pass above modelviewprojection matrix to the vertex shader in 'u_mvp_matrix' shader variable
-	// whose position value we already calculated in initWithFrame() by using glGetUniformLocation()
+	//pass above modelviewprojection matrix to the vertex shader in 'u_mvpMatrix' shader variable
+	// whose position value we already calculated in intiWithFrame() by using glGetUniformLocation()
 	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 
 	// bind vao
-	glBindVertexArray(gVao_Triangle);
+	glBindVertexArray(gVao_Pyramid);
 
-	
-	glDrawArrays(GL_TRIANGLES, 0, 12);
-
-	// unbind vao
-	glBindVertexArray(0);
-
-	TranslateMatrix = translate(-1.5f, 0.0f, -6.0f);
-	RotationMatrix = rotate(squareAngle, 0.0f, 1.0f, 0.0f);
-	modelViewMatrix = TranslateMatrix * RotationMatrix;
-
-	// opengl drawing
-	// set modelview & modelviewprojection matrix to identity
-	modelViewProjectionMatrix = mat4::identity();
-
-	// multiply modelview and orthographic matrix to get modelviewprojection matrix
-	modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;	// order is important
-
-	// pass above modelviewprojection matrix to the vertex shader in 'u_mvp_matrix' shader variable
-	// whose position value we already calculated in initWithFrame() by using glGetUniformLocation()
-	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
-
-	// bind vao
-	glBindVertexArray(gVao_Square);
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-	glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
-	glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
-	glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
-	glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
+	// draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+	glDrawArrays(GL_TRIANGLES, 0, 12); // 12 total vertex
 
 	// unbind vao
 	glBindVertexArray(0);
@@ -615,15 +529,12 @@ void Draw(void)
 	// stop using opengl program object
 	glUseProgram(0);
 
-	triangleAngle += 0.1f;
-	if (triangleAngle >= 360.0f)
-		triangleAngle = 0.0f;
+	pyramidAngle += 0.1f;
+	if (pyramidAngle >= 360.0f)
+		pyramidAngle = 0.0f;
 
-	squareAngle += 0.1f;
-	if (squareAngle >= 360.0f)
-		squareAngle = 0.0f;
 
-	glXSwapBuffers(gpDisplay, gWindow);
+	glFlush();
 }
 
 void UnInitialize(void)
@@ -651,6 +562,7 @@ void UnInitialize(void)
 		XCloseDisplay(gpDisplay);
 		gpDisplay = NULL;
 	}
+
 
 	currentGLXContext = glXGetCurrentContext();
 	if(currentGLXContext == gGLXContext)
@@ -684,42 +596,5 @@ void UnInitialize(void)
 	// unlink shader program
 	glUseProgram(0);
 
-	// destroy vao
-	if (gVao_Triangle)
-	{
-		glDeleteVertexArrays(1, &gVao_Triangle);
-		gVao_Triangle = 0;
-	}
-
-	// destroy vbo
-	if (gVbo_Triangle_Position)
-	{
-		glDeleteVertexArrays(1, &gVbo_Triangle_Position);
-		gVbo_Triangle_Position = 0;
-	}
-
-	if (gVbo_Triangle_Color)
-	{
-		glDeleteVertexArrays(1, &gVbo_Triangle_Color);
-		gVbo_Triangle_Color = 0;
-	}
-
-	if (gVao_Square)
-	{
-		glDeleteVertexArrays(1, &gVao_Square);
-		gVao_Square = 0;
-	}
-
-	// destroy vbo
-	if (gVbo_Square_Position)
-	{
-		glDeleteVertexArrays(1, &gVbo_Square_Position);
-		gVbo_Square_Position = 0;
-	}
-
-	if (gVbo_Square_Color)
-	{
-		glDeleteVertexArrays(1, &gVbo_Square_Color);
-		gVbo_Square_Color = 0;
-	}
+	
 }
